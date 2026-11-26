@@ -575,7 +575,7 @@ function buildSection(cat){
   const locked = !!S.locks[cat.id];
   let head = `<div class="cat-head"><h2>${ICONS[cat.id]||""} ${esc(catTitle(cat))}</h2>
     <span class="scope ${cat.scope==="shared"?"shared":""}">${cat.scope==="char"?T("charScope"):T("sharedScope")}</span>
-    ${cat.type==="multi"?'<span class="note">multi</span>':""}
+    ${cat.type==="multi"?'<span class="note">複数選択OK</span>':""}
     <span style="flex:1"></span>
     <button class="iconbtn" data-act="dice" title="random">🎲</button>
     <button class="iconbtn ${locked?"on":""}" data-act="lock" title="lock">🔒</button>
