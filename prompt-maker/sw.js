@@ -1,4 +1,4 @@
-const CACHE = "eru-maker-v16";
+const CACHE = "eru-maker-v17";
 self.addEventListener("install", e => { self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(
