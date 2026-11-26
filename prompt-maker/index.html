@@ -240,10 +240,7 @@ body{padding-bottom:64px}
     <span class="seg" id="modeSeg">
       <button data-mode="solo" data-count="1" class="on" data-i18n="solo">1人</button>
       <button data-mode="pair" data-count="2" data-i18n="pair">2人</button>
-      <button data-count="3">3人</button>
-      <button data-count="4">4人以上</button>
     </span>
-    <span class="note hidden" id="countNote" data-i18n="countNote"></span>
     <span class="seg hidden" id="charSeg">
       <button data-char="A" class="on">A</button>
       <button data-char="B">B</button>
@@ -377,13 +374,14 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=37"></script>
+<script src="data.js?v=40"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
 const CATS = DATA.cats, NEGCATS = DATA.negCats;
 const catById = {}; CATS.forEach(c=>catById[c.id]=c); NEGCATS.forEach(c=>catById[c.id]=c);
 const LS_KEY = "eru-maker-v1";
+const LS_BACKUP_KEY = LS_KEY + "-backup-v37";
 
 const ENGINES = {
   pixai:   { label:"PixAI",          limit:5000, neg:"separate" },
@@ -392,7 +390,7 @@ const ENGINES = {
 };
 
 const I18N = {
-  ja: { title:"オリキャラプロンプトメーカー", engine:"使うエンジン", people:"人数", countNote:"3人以上は「同じデザインのグループ指定」です（選んだデザインが全員に適用されます。1人ずつ別のデザインにはできません）", solo:"1人", pair:"2人",
+  ja: { title:"オリキャラプロンプトメーカー", engine:"使うエンジン", people:"人数", solo:"1人", pair:"2人",
     limit:"文字数上限", searchPh:"🔍 項目を検索（名前・英語）", favOnly:"お気に入りのみ", undo:"戻す", clear:"全解除",
     randomAll:"全ランダム", random3:"3案ランダム", daily:"今日のおまかせ", applyTheme:"テーマ適用",
     negTitle:"ネガティブプロンプト", rephrase:"言い換えてポジティブに追加",
@@ -407,8 +405,8 @@ const I18N = {
     charScope:"キャラ", sharedScope:"共通", themeNone:"テーマを選ぶ", copied:"コピーしました",
     linkCopied:"共有リンクをコピーしました", applied:"適用しました", saved:"保存しました",
     nothingSel:"まだ何も選ばれていません", over:"上限オーバー", within:"文字数OK",
-    helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3＋先頭／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。<br>・左右の表記（左目・右目、ほくろの左右、ツートンの左右など）は、キャラクター本人から見た左右です。<br>・両立しにくい組み合わせを選ぶと、出力欄の上に⚠でお知らせします（自動では消しません）。<br>・人数は上の「人数」で1人／2人／3人／4人以上を切り替えます。3人以上は、選んだデザインを使ったグループ指定として出力されます。" },
-  en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", countNote:"For 3 or more, the selection applies the same design to everyone (a group specification; per-character designs are not supported).", solo:"Solo", pair:"Pair",
+    helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3＋先頭／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。<br>・左右の表記（左目・右目、ほくろの左右、ツートンの左右など）は、キャラクター本人から見た左右です。<br>・両立しにくい組み合わせを選ぶと、出力欄の上に⚠でお知らせします（自動では消しません）。<br>・人数は上の「人数」で1人／2人を切り替えます。2人の場合は、A・Bそれぞれに別のデザインを指定できます。<br>・旧バージョンで保存したタトゥーの配置・大きさは引き継がれず「未指定」になります（別の位置や大きさを勝手に付けることはありません）。移行前の保存データは、このブラウザ内に一度だけバックアップが残ります。" },
+  en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", solo:"Solo", pair:"Pair",
     limit:"Char limit", searchPh:"🔍 Search items (name / English)", favOnly:"Favorites only", undo:"Undo", clear:"Clear all",
     randomAll:"Random all", random3:"3 random ideas", daily:"Today's pick", applyTheme:"Apply theme",
     negTitle:"Negative prompt", rephrase:"Rephrase into positive & add",
@@ -423,7 +421,7 @@ const I18N = {
     charScope:"Character", sharedScope:"Shared", themeNone:"Choose a theme", copied:"Copied",
     linkCopied:"Share link copied", applied:"Applied", saved:"Saved",
     nothingSel:"Nothing selected yet", over:"Over the limit", within:"Within limit",
-    helpBody:"・Just pick items and the prompt is built in the Output box below.<br>・Lock a category with 🔒 so random/themes won't change it.<br>・★ marks favorites; you can filter to favorites only.<br>・Color options show an extra row to pick a second color.<br>・Some models cannot use negative prompts. In that case, use Rephrase to convert them into positive wording instead.<br>・For niji・journey, negatives are converted into a --no parameter.<br>・Presets and history are stored only in this browser (never sent to a server).<br>・Hard-to-render elements can be boosted: tap a selected chip to add ⚡ and strengthen it (PixAI: weight 1.3 / niji: twice at the front / ChatGPT: repeated). Tap again to remove.<br>・In EN mode, item names stay in Japanese (prompts themselves are output in English).<br>・Left and right in this maker (left eye / right eye, mole sides, two-tone sides) are always from the point of view of the character.<br>・Combinations that clash are flagged with a warning above the output (nothing is removed automatically).<br>・Use the People selector for 1 / 2 / 3 / 4+ people. For 3 or more, the output becomes a group specification using the selected design." }
+    helpBody:"・Just pick items and the prompt is built in the Output box below.<br>・Lock a category with 🔒 so random/themes won't change it.<br>・★ marks favorites; you can filter to favorites only.<br>・Color options show an extra row to pick a second color.<br>・Some models cannot use negative prompts. In that case, use Rephrase to convert them into positive wording instead.<br>・For niji・journey, negatives are converted into a --no parameter.<br>・Presets and history are stored only in this browser (never sent to a server).<br>・Hard-to-render elements can be boosted: tap a selected chip to add ⚡ and strengthen it (PixAI: weight 1.3 / niji: twice at the front / ChatGPT: repeated). Tap again to remove.<br>・In EN mode, item names stay in Japanese (prompts themselves are output in English).<br>・Left and right in this maker (left eye / right eye, mole sides, two-tone sides) are always from the point of view of the character.<br>・Combinations that clash are flagged with a warning above the output (nothing is removed automatically).<br>・Use the People selector for 1 or 2 people. With 2 people, characters A and B can each have a separate design.<br>・Tattoo placement/size saved in older versions is not carried over and becomes 'unspecified' (a different placement or size is never assigned automatically). A one-time backup of the pre-migration saved data is kept in this browser." }
 };
 const store = {
   get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
@@ -483,13 +481,32 @@ function stripEyeReflection(f, who){
   if(wm){ wrap = true; body = wm[1]; }
   const eyeWord = /(eye|iris|irises|pupil|gaze)/i;
   const lightWord = /(highlight|sparkle|sparkling|glitter|glossy|catchlight|reflection|shiny|shine)/i;
-  const strong = /(glossy irises|clear highlights in the eyes|sparkling eyes|glittering)/i;
+  const strongLight = /(glossy|sparkling|glittering|catchlight|clear highlights|shiny|wet)/i;
   const out = body.split(", ").filter(s=>{
     if(mode===2 && eyeWord.test(s) && lightWord.test(s)) return false;
-    if(strong.test(s)) return false;
+    if(mode===1 && eyeWord.test(s) && strongLight.test(s)) return false;
     return true;
   }).join(", ");
   return wrap ? "(" + out + ":1.3)" : out;
+}
+function stripEyeReflectionJp(f, who){
+  if(!f) return f;
+  const mode = eyeStripMode(who||"A");
+  if(!mode) return f;
+  const eyeW = /(瞳|虹彩)/;
+  const lightW = /(ハイライト|輝き|輝く|反射|キャッチライト|艶|光沢|瞬い|キラキラ)/;
+  const strongW = /(ハイライト|キャッチライト|輝き|艶のある|強い光)/;
+  const drop = seg => {
+    if(!eyeW.test(seg)) return false;
+    if(mode===2) return lightW.test(seg);
+    return strongW.test(seg);
+  };
+  return f.split("。").map(sent=>sent.split("、").filter(s=>!drop(s)).join("、")).filter(s=>s.length).join("。");
+}
+function centeringApplies(){
+  const ss = catById["shootStyle"];
+  if(ss){ const v = getSel(ss, "A"); if(v!==null && v!==undefined && ss.options[v] && ss.options[v].label==="証明写真風") return true; }
+  return ["framing","angle","shootStyle"].some(id=>{ const c = catById[id]; if(!c) return false; const v = getSel(c, "A"); return v!==null && v!==undefined && !!(c.options[v] && c.options[v].centered); });
 }
 function optFrag(cat, opt, who){
   if(cat.id==="tattoo"){
@@ -567,6 +584,7 @@ function optFrag(cat, opt, who){
     const bgc = catById["background"];
     const bi = storeFor(bgc, who||S.active).sel[bgc.id];
     const bopt = (bi===null || bi===undefined || !bgc.options[bi]) ? null : bgc.options[bi];
+    if(bopt && bopt.fixedColor==="gradient") return "";
     if(bopt && bopt.scene) return opt.word + " color tones, the whole background scenery tinted in " + opt.word + " tones";
     return opt.frag;
   }
@@ -582,7 +600,17 @@ function saveLS(){
   try{ store.set(LS_KEY, JSON.stringify({ S, presets, cards, history })); }catch(e){}
 }
 let presets = [], cards = [], history = [];
+function backupLegacyState(){
+  try{
+    if(store.get(LS_BACKUP_KEY)) return;
+    const hasLegacy = [S.chars && S.chars.A, S.chars && S.chars.B, S.shared].some(st=>st && st.sel && st.sel.tattooSize!==undefined && st.sel.tattooSize!==null && !(Array.isArray(st.sel.tattooSize) && !st.sel.tattooSize.length));
+    if(hasLegacy) store.set(LS_BACKUP_KEY, JSON.stringify({ S, presets, cards, history }));
+  }catch(e){}
+}
 function sanitizeState(){
+  backupLegacyState();
+  if(S.count!==1 && S.count!==2) S.count = 1;
+  S.mode = S.count===2 ? "pair" : "solo";
   const valid = {};
   CATS.forEach(c=>valid[c.id]=c);
   [S.chars.A, S.chars.B, S.shared].forEach(st=>{
@@ -600,7 +628,8 @@ function sanitizeState(){
 function loadLS(){
   try{
     const raw = store.get(LS_KEY);
-    if(raw){ const d = JSON.parse(raw);
+    if(raw){ if(!store.get(LS_BACKUP_KEY)){ try{ store.set(LS_BACKUP_KEY, raw); }catch(e){} }
+      const d = JSON.parse(raw);
       presets = d.presets||[]; cards = d.cards||[]; history = d.history||[];
       if(d.S){ if(d.S.engine && ENGINES[d.S.engine]) S.engine = d.S.engine; if(d.S.limit) S.limit = d.S.limit; } }
     const h = location.hash.slice(1);
@@ -1054,7 +1083,7 @@ function collectBoostedFrags(){
     const idxs = cat.type==="multi" ? v : [v];
     idxs.forEach(i=>{ if(isBoosted(cat.id, i, who)){ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(cat.id!=="eyeTexture") f = stripEyeReflection(f, who); if(f && out.indexOf(f)<0) out.push(f); } } });
   };
-  orderCats().forEach(cat=>{ if(cat.scope==="shared") push(cat,"A"); else { push(cat,"A"); if(S.mode==="pair") push(cat,"B"); } });
+  orderCats().forEach(cat=>{ if(cat.id==="gender" && S.mode==="pair") return; if(cat.scope==="shared") push(cat,"A"); else { push(cat,"A"); if(S.mode==="pair") push(cat,"B"); } });
   return out;
 }
 function genderCountFrag(){
@@ -1094,23 +1123,7 @@ function buildPositive(){
     else { charA.push(...entriesOf(cat,"A")); if(S.mode==="pair") charB.push(...entriesOf(cat,"B")); }
   });
   if(S.mode!=="pair"){
-    const gc = catById["gender"]; const gv = getSel(gc,"A");
-    const gFrag = (gv===null||gv===undefined||!gc.options[gv]) ? "" : (gc.options[gv].frag||"");
-    const cntN = S.count || 1;
-    const hasComp = ["framing","angle","shootStyle"].some(id=>{ const c = catById[id]; if(!c) return false; const v = getSel(c, "A"); return v!==null && v!==undefined && !!(c.options[v] && c.options[v].frag); });
-    const cen = hasComp ? ", centered solo character" : "";
-    let phrase;
-    if(cntN>=3){
-      const numEn = cntN===3 ? "three" : "four or more";
-      const gtag = gFrag==="1girl" ? (cntN===3 ? "three girls" : "four or more girls") : gFrag==="1boy" ? (cntN===3 ? "three boys" : "four or more boys") : (cntN===3 ? "three characters" : "four or more characters");
-      phrase = "group portrait, exactly " + numEn + " characters, " + gtag + " in the frame, the characters standing together as a group";
-    }
-    else if(gFrag==="1girl") phrase = "solo, exactly one female character, one girl only, single-character portrait, one person alone in the frame" + cen + ", 1girl";
-    else if(gFrag==="1boy") phrase = "solo, exactly one male character, one boy only, single-character portrait, one person alone in the frame" + cen + ", 1boy";
-    else phrase = "solo, exactly one character, single-character portrait, one person alone in the frame" + cen + (gFrag ? ", " + gFrag : "");
-    const gi = gFrag ? charA.findIndex(e=>e.f===gFrag) : -1;
-    if(gi>=0) charA[gi] = { f: phrase, b: charA[gi].b };
-    else charA.unshift({ f: phrase, b: 0 });
+    charA.unshift({ f: "solo, exactly one character, single-character portrait" + (centeringApplies() ? ", centered solo character" : ""), b: 0 });
   }
   const boostSegs = { A: [], B: [], shared: [], quality: [] };
   if(S.engine==="niji" || S.engine==="pixai"){
@@ -1125,7 +1138,7 @@ function buildPositive(){
         if(S.engine==="niji") boostSegs[seg].push({f, b: blockOf(cat.id)});
       } } } });
     };
-    orderCats().forEach(cat=>{ if(cat.scope==="shared") push(cat,"A"); else { push(cat,"A"); if(S.mode==="pair") push(cat,"B"); } });
+    orderCats().forEach(cat=>{ if(cat.id==="gender" && S.mode==="pair") return; if(cat.scope==="shared") push(cat,"A"); else { push(cat,"A"); if(S.mode==="pair") push(cat,"B"); } });
   }
   const renderEn = (entries, boost, blockJoiner)=>{
     const groups = new Map();
@@ -1144,7 +1157,7 @@ function buildPositive(){
     const blocks = [];
     if(S.mode==="pair"){
       const cnt = genderCountFrag();
-      let s = "";
+      let s = "pair portrait, exactly two characters in the frame. ";
       if(cnt.length) s += cnt.join(", ") + ". ";
       const a = renderEn(charA, [], ". ");
       if(a) s += "Character A: " + a + ". ";
@@ -1164,6 +1177,7 @@ function buildPositive(){
   } else {
     const segs = [];
     if(S.mode==="pair"){
+      segs.push("pair portrait, exactly two characters in the frame");
       const cnt = genderCountFrag();
       if(cnt.length) segs.push(cnt.join(", "));
       const a = renderEn(charA, boostSegs.A, "\n");
@@ -1211,6 +1225,7 @@ function jpLabel(cat, opt, who){
     const bgc = catById["background"];
     const bi = storeFor(bgc, who||S.active).sel[bgc.id];
     const bopt = (bi===null || bi===undefined || !bgc.options[bi]) ? null : bgc.options[bi];
+    if(bopt && bopt.fixedColor==="gradient") return "";
     const pat = catById["bgPattern"];
     const pv = storeFor(pat, who||S.active).sel[pat.id];
     if(pv!==null && pv!==undefined && pat.options[pv] && pat.options[pv].colorTemplate) return "";
@@ -1302,7 +1317,7 @@ function collectJp(cat, who){
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ if(cat.id==="irisMotif" && o.label==="キラキラ" && eyeTextureLabel(who)==="ハイライトなし") return; if(!optFrag(cat,o,who)) return; const f = jpLabel(cat,o,who); if(f) out.push(f); } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ if(cat.id==="irisMotif" && o.label==="キラキラ" && eyeTextureLabel(who)==="ハイライトなし") return; if(!optFrag(cat,o,who)) return; const f = jpLabel(cat,o,who); const g = (cat.id==="eyeTexture") ? f : stripEyeReflectionJp(f, who); if(g) out.push(g); } });
   return out;
 }
 function genderCountJp(){
@@ -1328,9 +1343,6 @@ function buildJapanese(){
       const arr = collectJp(cat, who);
       if(arr.length) m[cat.id] = arr;
     });
-    if(m["quality"] && eyeTextureLabel(who)==="ハイライトなし"){
-      m["quality"] = m["quality"].map(s=>s.replace("まつ毛やハイライトまで細かい描写", "まつ毛まで細かい描写"));
-    }
     return m;
   };
   const renderBlocks = (m, sharedWanted)=>{
@@ -1357,6 +1369,7 @@ function buildJapanese(){
   let out;
   if(S.mode==="pair"){
     const lines = [];
+    lines.push("キャラクター2人。画面内には2人のキャラクターだけを配置する。");
     const cnt = genderCountJp();
     if(cnt.length) lines.push(cnt.join("、"));
     const a = renderBlocks(byCat("A"), false);
@@ -1367,14 +1380,7 @@ function buildJapanese(){
     if(sh) lines.push("共通：\n" + sh);
     out = lines.join("\n");
   } else {
-    const gc2 = catById["gender"]; const gv2 = getSel(gc2,"A");
-    const gFrag2 = (gv2===null||gv2===undefined||!gc2.options[gv2]) ? "" : (gc2.options[gv2].frag||"");
-    const who2 = gFrag2==="1boy" ? "男の子" : (gFrag2==="1girl" ? "女の子" : "キャラクター");
-    const cntN2 = S.count || 1;
-    const hasComp2 = ["framing","angle","shootStyle"].some(id=>{ const c = catById[id]; if(!c) return false; const v = getSel(c, "A"); return v!==null && v!==undefined && !!(c.options[v] && c.options[v].frag); });
-    const head2 = cntN2>=3
-      ? (cntN2===3 ? "キャラクター3人。画面内には3人のキャラクターだけを配置する。3人のキャラクターが並んだグループポートレート構図。" : "キャラクター4人以上。画面内に4人以上のキャラクターを配置する。グループポートレート構図。")
-      : who2 + "1人のみ。画面内には1人のキャラクターだけを配置する。" + (hasComp2 ? "人物を画面の中央に配置した、単独キャラクターのポートレート構図。" : "単独キャラクターのポートレート構図。");
+    const head2 = "キャラクター1人のみ。画面内には1人のキャラクターだけを配置する。" + (centeringApplies() ? "人物を画面の中央に配置する。" : "");
     const body2 = renderBlocks(byCat("A"), null);
     out = body2 ? head2 + "\n" + body2 : head2;
     const seenS = new Set();
@@ -1741,14 +1747,14 @@ function renderPresets(){
   const pl = document.getElementById("presetList");
   pl.innerHTML = presets.map((p,i)=>`<div class="listitem"><span>📌 ${esc(p.name)}</span><span>
     <button class="iconbtn" data-preset="${i}">適用</button> <button class="iconbtn" data-presetdel="${i}">削除</button></span></div>`).join("");
-  pl.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(presets[+b.dataset.preset].state))); syncControls(); afterChange(); toast(T("applied")); }));
+  pl.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(presets[+b.dataset.preset].state))); sanitizeState(); syncControls(); afterChange(); toast(T("applied")); }));
   pl.querySelectorAll("[data-presetdel]").forEach(b=>b.addEventListener("click", ()=>{ presets.splice(+b.dataset.presetdel,1); saveLS(); renderPresets(); }));
   const cl = document.getElementById("cardList");
   cl.innerHTML = cards.map((c,i)=>`<div class="listitem"><span>🪪 ${esc(c.name)} <span class="meta">→ ${esc(c.who)}</span></span><span>
     <button class="iconbtn" data-cardto="A:${i}">Aへ</button> <button class="iconbtn" data-cardto="B:${i}">Bへ</button> <button class="iconbtn" data-carddel="${i}">削除</button></span></div>`).join("");
   cl.querySelectorAll("[data-cardto]").forEach(b=>b.addEventListener("click", ()=>{
     const [who, i] = b.dataset.cardto.split(":");
-    pushUndo(); S.chars[who] = JSON.parse(JSON.stringify(cards[+i].data)); S.active = who; syncControls(); afterChange(); toast(T("applied"));
+    pushUndo(); S.chars[who] = JSON.parse(JSON.stringify(cards[+i].data)); S.active = who; sanitizeState(); syncControls(); afterChange(); toast(T("applied"));
   }));
   cl.querySelectorAll("[data-carddel]").forEach(b=>b.addEventListener("click", ()=>{ cards.splice(+b.dataset.carddel,1); saveLS(); renderPresets(); }));
 }
@@ -1757,7 +1763,7 @@ function renderHistory(){
   el.innerHTML = history.map((h,i)=>`<div class="listitem"><span>${esc(h.time)} <span class="meta">${esc(h.text.slice(0,80))}…</span></span>
     <button class="iconbtn" data-hist="${i}">復元</button></div>`).join("") || `<p class="note">—</p>`;
   el.querySelectorAll("[data-hist]").forEach(b=>b.addEventListener("click", ()=>{
-    pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(history[+b.dataset.hist].state))); syncControls(); afterChange(); toast(T("applied"));
+    pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(history[+b.dataset.hist].state))); sanitizeState(); syncControls(); afterChange(); toast(T("applied"));
   }));
 }
 function pushHistory(){
@@ -1836,7 +1842,6 @@ function applyI18n(){
 }
 function syncControls(){
   $("engineSel").value = S.engine;
-  const cn = $("countNote"); if(cn) cn.classList.toggle("hidden", (S.count||1)<3);
   document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on", (parseInt(b.dataset.count,10)||1)===(S.count||1)));
   $("charSeg").classList.toggle("hidden", S.mode!=="pair");
   document.querySelectorAll("#charSeg button").forEach(b=>b.classList.toggle("on", b.dataset.char===S.active));
