@@ -140,6 +140,12 @@
     padding:12px 14px; font-size:13.5px; line-height:1.9; color:#ffd7ec; margin-top:10px;
   }
   .ng b { color:#ff5c9e; letter-spacing:.2em; }
+  .ng.warn {
+    background:repeating-linear-gradient(45deg, #14100d 0 16px, #7c3aed 16px 32px);
+    border:none; padding:7px;
+  }
+  .ng.warn .ng-in { background:#2a1140; border-radius:8px; padding:10px 12px; }
+  .mk { background:linear-gradient(transparent 58%, rgba(192,132,252,.55) 58%); padding:0 2px; font-weight:bold; }
   table.tpl { width:100%; border-collapse:collapse; font-size:13px; }
   table.tpl th {
     text-align:left; color:#f0abfc; font-weight:bold; white-space:nowrap;
@@ -217,6 +223,27 @@
 
   <!-- 依頼メニュー -->
   <div class="panel" id="panel-menu">
+    <section>
+      <h2>ご依頼時の注意事項<span class="en">NOTES</span></h2>
+      <div class="card">
+        <ul class="hearts">
+          <li>ご依頼はXのDMからお願いします</li>
+          <li>内容に応じてお見積りいたします（メニューの金額は目安です）</li>
+          <li><span class="mk">お支払い確認後</span>に制作を開始します</li>
+          <li><span class="mk">リテイク（修正）は1回まで</span>対応いたします</li>
+          <li>AI生成＋加筆で制作しています。AIイラストへのご理解をお願いします</li>
+          <li>版権キャラクターのご依頼はお受けできません</li>
+        </ul>
+        <h3 style="margin-top:14px;">イラストの取り扱いについて</h3>
+        <ul class="hearts">
+          <li><span class="mk">商用利用OK</span>（配信・動画・グッズ・収益化などに使えます）</li>
+          <li>SNSアイコン・配信サムネイル等での使用OK</li>
+          <li>トリミングや文字入れなどの軽い加工OK</li>
+          <li><span class="mk">配信でご利用の場合はクレジット表記必須</span>です（名前とXのID）。<br>それ以外は任意です</li>
+        </ul>
+        <div class="ng warn"><div class="ng-in"><b>NG</b><br>自作発言 / 二次配布・再販 / 無断転載<br>AI読み込み（学習利用） / トレス・模倣<br>誹謗中傷・公序良俗に反する使用<br>政治・宗教活動への使用</div></div>
+      </div>
+    </section>
     <section>
       <h2>ご依頼メニュー<span class="en">COMMISSION</span></h2>
       <div class="card">
@@ -392,9 +419,9 @@
           <li>ラフ・完成後は複数枚ご提示いたします。</li>
           <li>依頼のやりとりはXを通じて行います。</li>
           <li>追加でご希望の場合は +500円 / 1枚となります。</li>
-          <li>リテイク（修正）は1回まで対応いたします。</li>
+          <li><span class="mk">リテイク（修正）は1回まで</span>対応いたします。</li>
           <li>異なるデザイン・構図・ポーズの追加は新たなご依頼扱いとなります。</li>
-          <li>お支払いがない場合や、無断でご連絡が途絶えた場合は、今後のご依頼をお断りいたします。</li>
+          <li>お支払いがない場合や、無断でご連絡が途絶えた場合は、<span class="mk">今後のご依頼をお断りいたします</span>。</li>
           <li>お互いに気持ちよくお取引を進めるため、ご理解とご協力をお願いいたします。</li>
         </ul>
       </div>
@@ -446,12 +473,12 @@
       <div class="card">
         <h3>フリーアイコン・フリーイラストについて</h3>
         <ul class="hearts">
-          <li>フォロワー様限定</li>
+          <li><span class="mk">フォロワー様限定</span></li>
           <li>いいね＆RP必須</li>
           <li>SNS・配信等での使用OK</li>
-          <li>フォロー＋クレジット（名前とXのID）必須</li>
+          <li>フォロー＋<span class="mk">クレジット（名前とXのID）必須</span></li>
         </ul>
-        <div class="ng"><b>NG</b><br>自作発言 / 二次配布 / 無断転載<br>商用利用 / AI読み込み / グッズ化<br>過度な加工 / トレス・模倣<br>誹謗中傷・公序良俗に反する使用<br>政治・宗教活動への使用</div>
+        <div class="ng warn"><div class="ng-in"><b>NG</b><br>自作発言 / 二次配布 / 無断転載<br>商用利用 / AI読み込み / グッズ化<br>過度な加工 / トレス・模倣<br>誹謗中傷・公序良俗に反する使用<br>政治・宗教活動への使用</div></div>
       </div>
       <div class="card">
         <h3>ご利用時のお願い</h3>
