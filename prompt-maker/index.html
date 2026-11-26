@@ -376,7 +376,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=35"></script>
+<script src="data.js?v=36"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -577,15 +577,30 @@ function saveLS(){
   try{ store.set(LS_KEY, JSON.stringify({ S, presets, cards, history })); }catch(e){}
 }
 let presets = [], cards = [], history = [];
+function sanitizeState(){
+  const valid = {};
+  CATS.forEach(c=>valid[c.id]=c);
+  [S.chars.A, S.chars.B, S.shared].forEach(st=>{
+    if(!st) return;
+    Object.keys(st.sel||{}).forEach(id=>{ if(!valid[id]) delete st.sel[id]; });
+    Object.keys(st.co||{}).forEach(k=>{ const id = k.replace(/^[AB]-/, ""); });
+    Object.keys(st.sel||{}).forEach(id=>{
+      const c = valid[id]; const v = st.sel[id];
+      if(c.type==="multi"){ st.sel[id] = (Array.isArray(v)?v:[]).filter(i=>c.options[i]); }
+      else if(v !== null && v !== undefined && !c.options[v]) st.sel[id] = null;
+    });
+  });
+  Object.keys(S.neg||{}).forEach(id=>{ if(!NEGCATS.some(c=>c.id===id)) delete S.neg[id]; });
+}
 function loadLS(){
   try{
     const raw = store.get(LS_KEY);
-    if(raw){ const d = JSON.parse(raw); if(d.S) S = Object.assign(emptyState(), d.S);
-      if(S.engine==="pixai3" || S.engine==="pixai2") S.engine = "pixai";
-      presets = d.presets||[]; cards = d.cards||[]; history = d.history||[]; }
+    if(raw){ const d = JSON.parse(raw);
+      presets = d.presets||[]; cards = d.cards||[]; history = d.history||[];
+      if(d.S){ if(d.S.engine && ENGINES[d.S.engine]) S.engine = d.S.engine; if(d.S.limit) S.limit = d.S.limit; } }
     const h = location.hash.slice(1);
     if(h){ const d = JSON.parse(decodeURIComponent(escape(atob(h))));
-      if(d && d.chars) { S = Object.assign(emptyState(), d); toast(T("applied")); } }
+      if(d && d.chars) { S = Object.assign(emptyState(), d); sanitizeState(); toast(T("applied")); } }
     normalizeSoloActive();
   }catch(e){}
 }
@@ -1739,7 +1754,8 @@ document.addEventListener("keydown", e=>{
 });
 $("clearBtn").addEventListener("click", ()=>{
   pushUndo();
-  CATS.forEach(cat=>clearCat(cat)); NEGCATS.forEach(cat=>{ S.neg[cat.id]=[]; }); S.extra = [];
+  const keep = { engine: S.engine, limit: S.limit };
+  S = Object.assign(emptyState(), keep);
   afterChange();
 });
 $("randomAllBtn").addEventListener("click", randomizeAll);
