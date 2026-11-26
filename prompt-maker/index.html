@@ -1068,7 +1068,7 @@ function collectJp(cat, who){
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ const f = jpLabel(cat,o,who); if(f) out.push(f); } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ if(!optFrag(cat,o,who)) return; const f = jpLabel(cat,o,who); if(f) out.push(f); } });
   return out;
 }
 function genderCountJp(){
