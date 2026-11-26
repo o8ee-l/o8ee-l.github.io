@@ -368,7 +368,7 @@ const I18N = {
     charScope:"キャラ", sharedScope:"共通", themeNone:"テーマを選ぶ", copied:"コピーしました",
     linkCopied:"共有リンクをコピーしました", applied:"適用しました", saved:"保存しました",
     nothingSel:"まだ何も選ばれていません", over:"上限オーバー", within:"文字数OK",
-    helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。" },
+    helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3＋先頭／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。" },
   en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", solo:"Solo", pair:"Pair",
     limit:"Char limit", searchPh:"🔍 Search items (name / English)", favOnly:"Favorites only", undo:"Undo", clear:"Clear all",
     randomAll:"Random all", random3:"3 random ideas", daily:"Today's pick", applyTheme:"Apply theme",
@@ -851,7 +851,7 @@ function collectFrags(cat, who){
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(f){ if(isBoosted(cat.id, i, who)){ if(S.engine==="niji") return; f = boostWrap(f); } out.push(f); } } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(f){ if(isBoosted(cat.id, i, who)){ if(S.engine==="niji" || S.engine==="pixai") return; f = boostWrap(f); } out.push(f); } } });
   return out;
 }
 function collectBoostedFrags(){
@@ -913,12 +913,13 @@ function buildPositive(){
   } else {
     parts = [...quality, ...charA, ...shared];
   }
-  if(S.engine==="niji"){
-    const bf = collectBoostedFrags();
-    if(bf.length){
+  if(S.engine==="niji" || S.engine==="pixai"){
+    const bf0 = collectBoostedFrags();
+    if(bf0.length){
+      const bf = S.engine==="pixai" ? bf0.map(f=>"(" + f + ":1.3)") : bf0;
       const headLen = quality.length + (S.mode==="pair" ? genderCountFrag().length : 0);
       const head = parts.slice(0, headLen), tail = parts.slice(headLen);
-      parts = [...head, ...bf, ...bf, ...tail];
+      parts = S.engine==="pixai" ? [...head, ...bf, ...tail] : [...head, ...bf, ...bf, ...tail];
     }
   }
   parts.push(...S.extra);
