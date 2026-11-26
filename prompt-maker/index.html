@@ -364,7 +364,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=29"></script>
+<script src="data.js?v=30"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -564,12 +564,12 @@ function catTitle(c){ return lang==="en" ? (c.titleEn||c.title) : c.title; }
 /* ---------- rendering ---------- */
 const catRoot = document.getElementById("catRoot");
 const negRoot = document.getElementById("negRoot");
-const ICONS = { gender:"👤", age:"🎂", bodyType:"📐", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️",
+const ICONS = { gender:"👤", age:"🎂", bodyType:"📐", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️", forehead:"👆",
   sidelocks:"🎀", hairPlus:"➕", hairColor:"🎨", colorOption:"🌈", skinColor:"🖐️", eyeShape:"👀", eyeColor:"💜",
   pupilMotif:"💖", eyebrows:"🤨", faceDetail:"✨", mouth:"🦷", expression:"😊", outfit:"👗", features:"🐾", camera:"📷", poseSolo:"🧍", posePair:"👥",
   framing:"🖼️", angle:"📐", gazeSolo:"👁️", gazePair:"👁️", bgColor:"🪣", background:"🏙️", effects:"✨", quality:"💎" };
 const GROUPS = [
-  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression","quality"] },
+  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression","quality"] },
   { id:"g-outfit", ja:"服装", en:"Outfit", cats:["outfit"] },
   { id:"g-features", ja:"特徴", en:"Features", cats:["features"] },
   { id:"g-pose", ja:"ポーズ", en:"Pose", cats:["poseSolo","posePair","gazeSolo","gazePair"] },
@@ -964,7 +964,7 @@ function genderCountFrag(){
 function buildPositive(){
   const eng = ENGINES[S.engine];
   const cats = orderCats();
-  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"]];
+  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"]];
   const blockOf = id => { const i = BLOCKS_EN.findIndex(b=>b.indexOf(id)>=0); return i<0 ? 99 : i; };
   const entriesOf = (cat, who) => collectFrags(cat, who).map(f=>({f, b: blockOf(cat.id)}));
   const quality = [], shared = [], charA = [], charB = [];
@@ -1150,7 +1150,7 @@ function genderCountJp(){
   return parts;
 }
 function buildJapanese(){
-  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"],["quality"]];
+  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"],["quality"]];
   const byCat = (who)=>{
     const m = {};
     orderCats().forEach(cat=>{
@@ -1272,6 +1272,13 @@ function findConflicts(){
     }
     if(hasLabel("pupilMotif","ハイライトなし") && hasLabel("pupilMotif","キラキラ瞳")){
       msgs.push(prefix + "「ハイライトなし」と「キラキラ瞳」が両方選ばれています");
+    }
+    const upBangs = hasLabel("hair","アップバング") || hasLabel("bangs","アップバング");
+    if(upBangs && hasLabel("forehead","非露出")){
+      msgs.push(prefix + "アップバングと「額の露出度：非露出」が矛盾しています。アップバングは額全体を露出させる髪型です");
+    }
+    if(upBangs && hasLabel("forehead","部分露出")){
+      msgs.push(prefix + "アップバングに「額の露出度：部分露出」が指定されています。前髪の一部を残したアレンジとして出力されます");
     }
     const mouthSel = selOf("mouth");
     if(Array.isArray(mouthSel) && mouthSel.length && hasLabel("expression","無表情")){
