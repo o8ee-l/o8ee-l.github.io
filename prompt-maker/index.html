@@ -362,7 +362,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js"></script>
+<script src="data.js?v=23"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -1016,17 +1016,19 @@ function jpLabel(cat, opt, who){
   }
   if(opt.jp) return opt.jp;
   if(cat.id==="hairColor"){
-    if(opt.label==="カラフル") return "カラフルな髪";
+    const CW = {"黒":"黒色","茶":"茶色","こげ茶":"焦げ茶色","金":"金色","銀白":"銀白色","紫":"紫色","青":"青色","赤":"赤色","緑":"緑色"};
+    const cw = l => CW[l] || l;
+    if(opt.label==="カラフル") return "カラフルな髪色、虹色に染まった髪";
     if(opt.multiColors){
       const st = storeFor(cat, who||S.active);
       const lab = ci => (ci===null || ci===undefined) ? null : cat.options[ci].label;
-      const L1 = lab(st.co[opt._idx]) || "ピンク";
-      const L2 = lab(st.co[1000+opt._idx]) || "紫";
-      const L3 = lab(st.co[2000+opt._idx]) || "青";
-      return L1 + "と" + L2 + "と" + L3 + "の3色の髪";
+      const L1 = cw(lab(st.co[opt._idx]) || "ピンク");
+      const L2 = cw(lab(st.co[1000+opt._idx]) || "紫");
+      const L3 = cw(lab(st.co[2000+opt._idx]) || "青");
+      return L1 + "と" + L2 + "と" + L3 + "の3色の髪色、毛束ごとに色が分かれて見える";
     }
-    if(opt.label==="3色") return "3色の髪";
-    return opt.label + "の髪";
+    if(opt.label==="3色") return "3色の髪色";
+    return cw(opt.label) + "の髪色";
   }
   if(cat.id==="eyeColor"){
     if(opt.gradColors){
@@ -1034,9 +1036,11 @@ function jpLabel(cat, opt, who){
       const lab = ci => (ci===null || ci===undefined) ? null : cat.options[ci].label;
       const L1 = lab(st.co[opt._idx]) || "紫";
       const L2 = lab(st.co[1000+opt._idx]) || "ピンク";
-      return L1 + "と" + L2 + "のグラデーションの目";
+      const EW2 = {"赤":"赤色","青":"青色","紫":"紫色","金":"金色","緑":"緑色","茶":"茶色"};
+      return (EW2[L1] || L1) + "と" + (EW2[L2] || L2) + "のグラデーションの瞳";
     }
-    return opt.label==="オッドアイ" ? "オッドアイ" : opt.label + "の目";
+    const EW = {"赤":"赤色","青":"青色","紫":"紫色","金":"金色","緑":"緑色","茶":"茶色"};
+    return opt.label==="オッドアイ" ? "オッドアイ、左右で色の違う瞳" : (EW[opt.label] || opt.label) + "の瞳";
   }
   if(cat.id==="bgColor") return "";
   if(cat.id==="background" && opt.colorTemplate){
