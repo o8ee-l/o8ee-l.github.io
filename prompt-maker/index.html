@@ -1035,6 +1035,15 @@ function collectNegatives(){
   NEGCATS.forEach(cat=>{
     (S.neg[cat.id]||[]).forEach(i=>{ const o = cat.options[i]; if(o && o.frag) out.push(o.frag); });
   });
+  const bt = catById["bodyType"];
+  if(bt){
+    const sdIdx = bt.options.findIndex(o=>o.label.indexOf("SD")===0);
+    const hasSD = who => storeFor(bt, who).sel["bodyType"] === sdIdx;
+    if(sdIdx>=0 && (hasSD("A") || (S.mode==="pair" && hasSD("B")))){
+      ["normal proportions", "tall body", "long legs"].forEach(n=>{ if(!out.includes(n)) out.push(n); });
+      if(S.mode!=="pair") ["multiple characters", "extra character"].forEach(n=>{ if(!out.includes(n)) out.push(n); });
+    }
+  }
   return out;
 }
 function buildNegative(){
