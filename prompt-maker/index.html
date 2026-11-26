@@ -451,6 +451,17 @@ function coSideState(raw){
   return { c:null, s:"l" };
 }
 function optFrag(cat, opt, who){
+  if(opt.places){
+    const st = storeFor(cat, who||S.active);
+    const mask = st.co[opt._idx] || 0;
+    const sel = opt.places.filter((p,pi)=>mask & (1<<pi));
+    if(opt.placeMode==="suffix"){
+      const use = sel.length ? sel : [opt.places[opt.placeDefault||0]];
+      return use.map(p=>"small " + opt.frag + " " + p.frag + ", " + opt.frag + " design " + p.frag).join(", ");
+    }
+    if(sel.length) return sel.map(p=>p.frag).join(", ");
+    return opt.frag;
+  }
   if(cat.id==="hairColor" && opt.multiColors){
     const st = storeFor(cat, who||S.active);
     const word = ci => (ci===null || ci===undefined) ? null : cat.options[ci].frag.replace(/ hair$/, "");
@@ -624,6 +635,15 @@ function buildSection(cat){
       `<button class="chipbtn ${isOn(cat,i)?"on":""}" data-pick="${i}">${esc(o.label)}${o.isNew?'<span class="newbadge">NEW</span>':""}${warnBadge(o)}${favBtn(o)}</button>`
     ).join("") + `</div>`;
   }
+  cat.options.forEach((o,i)=>{
+    if(o.places){
+      const st = selStore(cat);
+      const mask = st.co[i] || 0;
+      const on = isOn(cat,i);
+      body += `<div class="corow ${on?"":"hidden"}" data-placerow="${i}"><span class="cname">${esc(o.label)} \u306e\u5834\u6240:</span>` +
+        o.places.map((p,pi)=>`<button class="mini-chip ${(mask & (1<<pi))?"on":""}" data-place="${i}:${pi}">${esc(p.label)}</button>`).join("") + `</div>`;
+    }
+  });
   if(cat.id==="colorOption"){
     const st = selStore(cat);
     cat.options.forEach((o,i)=>{
@@ -713,6 +733,14 @@ function buildSection(cat){
     st.co[oi] = cs;
     const row = b.closest(".corow");
     if(row) row.querySelectorAll("[data-cos]").forEach(x=>x.classList.toggle("on", cs.c===Number(x.dataset.cos.split(":")[1])));
+    renderSummary(); renderOutput(); saveLS();
+  }));
+  sec.querySelectorAll("[data-place]").forEach(b=>b.addEventListener("click", ()=>{
+    const [oi,pi] = b.dataset.place.split(":").map(Number);
+    pushUndo();
+    const st = storeFor(cat, S.active);
+    st.co[oi] = (st.co[oi]||0) ^ (1<<pi);
+    b.classList.toggle("on", !!(st.co[oi] & (1<<pi)));
     renderSummary(); renderOutput(); saveLS();
   }));
   sec.querySelectorAll("[data-side]").forEach(b=>b.addEventListener("click", ()=>{
@@ -975,6 +1003,17 @@ function buildPositive(){
   return out;
 }
 function jpLabel(cat, opt, who){
+  if(opt.places){
+    const st = storeFor(cat, who||S.active);
+    const mask = st.co[opt._idx] || 0;
+    const sel = opt.places.filter((p,pi)=>mask & (1<<pi));
+    if(opt.placeMode==="suffix"){
+      const use = sel.length ? sel : [opt.places[opt.placeDefault||0]];
+      return use.map(p=>p.jp + "\u306e" + (opt.jpBase||opt.label)).join("\u3001");
+    }
+    if(sel.length) return sel.map(p=>p.jp).join("\u3001");
+    return opt.jp || opt.label;
+  }
   if(opt.jp) return opt.jp;
   if(cat.id==="hairColor"){
     if(opt.label==="カラフル") return "カラフルな髪";
@@ -1205,6 +1244,7 @@ function afterPickInPlace(cat, idx, el){
     if(cat.id==="eyeColor" || cat.id==="hairColor"){
       sec.querySelectorAll("[data-corow]").forEach(r=>r.classList.toggle("hidden", !isOn(cat, parseInt(r.dataset.corow,10))));
     }
+    sec.querySelectorAll("[data-placerow]").forEach(r=>r.classList.toggle("hidden", !isOn(cat, parseInt(r.dataset.placerow,10))));
   }
   refreshGroupBadge(cat);
   renderSummary(); renderOutput(); saveLS();
