@@ -1446,7 +1446,7 @@ function updateXShare(){
   };
   collect("A", false);
   if(S.mode==="pair") collect("B", true);
-  const text = "オリキャラプロンプトメーカーで組み合わせ作ったよ💜\n" + (labels.length ? labels.join(" / ") + "\n" : "") + "https://o8ee-l.github.io/prompt-maker/\n#HoneyLoom";
+  const text = "オリキャラプロンプトメーカーで組み合わせ作ったよ💜\n" + (labels.length ? labels.join(" / ") + "\n" : "") + "https://o8ee-l.github.io/prompt-maker/";
   a.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
 }
 $("rephraseBtn").addEventListener("click", ()=>{
