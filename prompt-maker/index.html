@@ -364,7 +364,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=28"></script>
+<script src="data.js?v=29"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -566,10 +566,10 @@ const catRoot = document.getElementById("catRoot");
 const negRoot = document.getElementById("negRoot");
 const ICONS = { gender:"👤", age:"🎂", bodyType:"📐", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️",
   sidelocks:"🎀", hairPlus:"➕", hairColor:"🎨", colorOption:"🌈", skinColor:"🖐️", eyeShape:"👀", eyeColor:"💜",
-  pupilMotif:"💖", eyebrows:"🤨", faceDetail:"✨", expression:"😊", outfit:"👗", features:"🐾", camera:"📷", poseSolo:"🧍", posePair:"👥",
+  pupilMotif:"💖", eyebrows:"🤨", faceDetail:"✨", mouth:"🦷", expression:"😊", outfit:"👗", features:"🐾", camera:"📷", poseSolo:"🧍", posePair:"👥",
   framing:"🖼️", angle:"📐", gazeSolo:"👁️", gazePair:"👁️", bgColor:"🪣", background:"🏙️", effects:"✨", quality:"💎" };
 const GROUPS = [
-  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","expression","quality"] },
+  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression","quality"] },
   { id:"g-outfit", ja:"服装", en:"Outfit", cats:["outfit"] },
   { id:"g-features", ja:"特徴", en:"Features", cats:["features"] },
   { id:"g-pose", ja:"ポーズ", en:"Pose", cats:["poseSolo","posePair","gazeSolo","gazePair"] },
@@ -964,7 +964,7 @@ function genderCountFrag(){
 function buildPositive(){
   const eng = ENGINES[S.engine];
   const cats = orderCats();
-  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"]];
+  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"]];
   const blockOf = id => { const i = BLOCKS_EN.findIndex(b=>b.indexOf(id)>=0); return i<0 ? 99 : i; };
   const entriesOf = (cat, who) => collectFrags(cat, who).map(f=>({f, b: blockOf(cat.id)}));
   const quality = [], shared = [], charA = [], charB = [];
@@ -993,7 +993,11 @@ function buildPositive(){
     const groups = new Map();
     const add = (e)=>{ if(!groups.has(e.b)) groups.set(e.b, []); groups.get(e.b).push(e.f); };
     boost.forEach(add);
-    entries.forEach(add);
+    const seenSeg = new Set();
+    entries.forEach(e=>{
+      const segs = e.f.split(", ").filter(s=>{ if(seenSeg.has(s)) return false; seenSeg.add(s); return true; });
+      if(segs.length) add({ f: segs.join(", "), b: e.b });
+    });
     return [...groups.keys()].sort((a,b)=>a-b).map(k=>groups.get(k).filter(Boolean).join(", ")).filter(Boolean).join(blockJoiner);
   };
   const qualitySeg = [...boostSegs.quality.map(e=>e.f), ...quality].filter(Boolean).join(", ");
@@ -1146,7 +1150,7 @@ function genderCountJp(){
   return parts;
 }
 function buildJapanese(){
-  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"],["quality"]];
+  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilMotif","eyebrows","faceDetail","mouth","expression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["camera","framing","angle"],["background","effects"],["quality"]];
   const byCat = (who)=>{
     const m = {};
     orderCats().forEach(cat=>{
@@ -1167,7 +1171,14 @@ function buildJapanese(){
         if(m[id]) items.push(...m[id]);
       });
       if(!items.length) return null;
-      return items.map(s=>s.replace(/。+$/,"")).join("。") + "。";
+      const seenJ = new Set();
+      const deduped = [];
+      items.forEach(s=>{
+        const segs = s.split("、").filter(p=>{ if(seenJ.has(p)) return false; seenJ.add(p); return true; });
+        if(segs.length) deduped.push(segs.join("、"));
+      });
+      if(!deduped.length) return null;
+      return deduped.map(s=>s.replace(/。+$/,"")).join("。") + "。";
     }).filter(Boolean).join("\n");
   };
   let out;
@@ -1261,6 +1272,10 @@ function findConflicts(){
     }
     if(hasLabel("pupilMotif","ハイライトなし") && hasLabel("pupilMotif","キラキラ瞳")){
       msgs.push(prefix + "「ハイライトなし」と「キラキラ瞳」が両方選ばれています");
+    }
+    const mouthSel = selOf("mouth");
+    if(Array.isArray(mouthSel) && mouthSel.length && hasLabel("expression","無表情")){
+      msgs.push(prefix + "「口元・歯のデザイン」を選んでいますが、無表情（口を閉じた表情）では歯が見えにくくなります");
     }
     const ears = ["猫耳","犬耳","うさぎ耳","狐耳","狼耳","熊耳","羊耳"].filter(l=>hasLabel("features",l));
     if(ears.length>=2) msgs.push(prefix + "耳の特徴が複数選ばれています（" + ears.join("・") + "）");
