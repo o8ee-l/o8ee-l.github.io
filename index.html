@@ -166,6 +166,16 @@
   }
   .dog-small { width:120px; display:block; margin:4px auto 0; animation:floaty 3.6s ease-in-out infinite; }
   footer { text-align:center; color:#8f7bb8; font-size:11.5px; margin-top:14px; }
+  /* PCレイアウト（1024px以上） */
+  @media (min-width:1024px) {
+    .wrap { max-width:1080px; }
+    .panel.active { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
+    .panel > * { min-width:0; }
+    .panel > :not(.card) { grid-column:1 / -1; }
+    #panel-profile.active, #panel-must.active, #panel-terms.active, #panel-links.active { display:block; max-width:760px; margin-left:auto; margin-right:auto; }
+    .gallery { grid-template-columns:repeat(4, 1fr); }
+    .gallery img.wide { grid-column:span 2; }
+  }
   @media (max-width:480px) {
     .tabs button { font-size:12px; padding:9px 1px; flex:1 1 21%; }
     .profile h1 { font-size:22px; }
@@ -191,7 +201,7 @@
 
   <div class="profile">
     <h1>蜂生 える</h1>
-    <div class="reading">Eru Hachio</div>
+    <div class="reading">L Hachio</div>
     <img class="dog" src="img/deco-dog-rainbow.png" alt="">
   </div>
 
