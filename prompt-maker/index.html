@@ -192,9 +192,10 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
 }
 @media (min-width:1024px){
   .wrap{max-width:1460px; display:grid; grid-template-columns:minmax(0,1fr) 400px; column-gap:18px; align-items:start}
-  .wrap > .toolbar, .wrap > #summaryBar{grid-column:1 / -1}
+  .wrap > .toolbar{grid-column:1 / -1}
+  .wrap > #summaryBar{grid-column:1}
   #catRoot{grid-column:1; grid-row:4}
-  #outPanel{grid-column:2; grid-row:4; position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto}
+  #outPanel{grid-column:2; grid-row:4; position:sticky; top:70px; max-height:calc(100vh - 164px); overflow:auto}
   #outPanel .outhead{position:sticky; top:-14px; z-index:3; margin:-14px -14px 0; padding:14px 14px 8px; background:var(--card); border-radius:17px 17px 0 0}
   #negPanel, #nijiPanel{grid-column:1 / -1}
   .wrap > section.panel:not(#negPanel):not(#nijiPanel):not(#outPanel){grid-column:1 / -1}
