@@ -1054,7 +1054,7 @@ function jpLabel(cat, opt, who){
     if(opt.sideColor){
       const cs = coSideState(raw);
       const L = lab(cs.c) || lab(curIdx);
-      return (L ? L + "の" : "") + opt.label + (cs.s==="r" ? "（右側）" : "（左側）");
+      return (L ? L + "の" : "") + opt.label + (cs.s==="r" ? "、右側" : "、左側");
     }
     if(typeof raw==="number") return lab(raw) + "の" + opt.label;
     const L2 = lab(curIdx);
