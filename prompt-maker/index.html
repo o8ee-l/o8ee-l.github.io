@@ -364,7 +364,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=27"></script>
+<script src="data.js?v=28"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -1276,7 +1276,7 @@ function trimToLimit(){
   const lim = currentLimit();
   if(buildPositive().length<=lim) return;
   pushUndo();
-  S.outEdited = null;
+  S.outEdited = null; S.jpEdited = null;
   const dropOrder = ["effects","background","framing","angle","quality"];
   for(const cid of dropOrder){
     if(buildPositive().length<=lim) break;
@@ -1361,8 +1361,17 @@ function afterPickInPlace(cat, idx, el){
   refreshGroupBadge(cat);
   renderSummary(); renderOutput(); saveLS();
 }
+function syncEditedPair(){
+  const enE = S.outEdited !== null && S.outEdited !== undefined;
+  const jpE = S.jpEdited !== null && S.jpEdited !== undefined;
+  if(enE !== jpE){
+    S.outEdited = null; S.jpEdited = null;
+    toast("編集済みの出力が片方だけ残っていたので、同期のため両方を再生成しました");
+  }
+}
 function afterChange(){
   normalizeSoloActive();
+  syncEditedPair();
   const y = window.scrollY;
   renderCats(); renderNeg(); renderSummary(); renderOutput(); saveLS();
   if(!restoreAnchor()){ try{ window.scrollTo(0, y); }catch(e){} }
