@@ -195,6 +195,7 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   .wrap > .toolbar, .wrap > #summaryBar{grid-column:1 / -1}
   #catRoot{grid-column:1; grid-row:4}
   #outPanel{grid-column:2; grid-row:4; position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto}
+  #outPanel .outhead{position:sticky; top:-14px; z-index:3; margin:-14px -14px 0; padding:14px 14px 8px; background:var(--card); border-radius:17px 17px 0 0}
   #negPanel, #nijiPanel{grid-column:1 / -1}
   .wrap > section.panel:not(#negPanel):not(#nijiPanel):not(#outPanel){grid-column:1 / -1}
 }
@@ -273,6 +274,7 @@ body{padding-bottom:64px}
   </section>
 
   <section class="panel" id="outPanel">
+    <div class="outhead">
     <h2 data-i18n="output">出力プロンプト</h2>
     <div class="rowflex">
       <span class="count ok" id="posCount"></span>
@@ -282,6 +284,7 @@ body{padding-bottom:64px}
       <button class="btn small" id="cardBtn">🖼 <span data-i18n="card">画像カード</span></button>
       <button class="btn small" id="shareBtn">🔗 <span data-i18n="share">共有リンク</span></button>
       <button class="btn primary" id="copyBtn">📋 <span data-i18n="copy">コピー</span></button>
+    </div>
     </div>
     <input type="text" id="freeText" data-i18n-ph="freeTextPh" placeholder="追記したい言葉（出力の末尾に付きます）" style="width:100%;box-sizing:border-box;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px">
     <textarea class="out mt8" id="outPos"></textarea>
@@ -509,7 +512,16 @@ function loadLS(){
     const h = location.hash.slice(1);
     if(h){ const d = JSON.parse(decodeURIComponent(escape(atob(h))));
       if(d && d.chars) { S = Object.assign(emptyState(), d); toast(T("applied")); } }
+    normalizeSoloActive();
   }catch(e){}
+}
+function normalizeSoloActive(){
+  if(S.mode==="solo" && S.active==="B"){
+    const a = S.chars.A || {sel:{},co:{}};
+    const aEmpty = !Object.keys(a.sel||{}).length && !Object.keys(a.co||{}).length;
+    if(aEmpty && S.chars.B) S.chars.A = JSON.parse(JSON.stringify(S.chars.B));
+    S.active = "A";
+  }
 }
 function toast(msg){
   const el = document.getElementById("toast");
@@ -1196,6 +1208,7 @@ function afterPickInPlace(cat, idx, el){
   renderSummary(); renderOutput(); saveLS();
 }
 function afterChange(){
+  normalizeSoloActive();
   const y = window.scrollY;
   renderCats(); renderNeg(); renderSummary(); renderOutput(); saveLS();
   if(!restoreAnchor()){ try{ window.scrollTo(0, y); }catch(e){} }
