@@ -184,9 +184,8 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   .btn{padding:10px 15px}
   body{padding-bottom:64px}
 @media (max-width:820px){
-  #mobileBar{flex-wrap:wrap; padding:8px 10px calc(7px + env(safe-area-inset-bottom)); gap:6px}
-  #mobileBar button{order:0; padding:8px 2px; font-size:12px; border-radius:10px}
-  #mobileBar .count{order:1; flex:1 1 100%; text-align:center; font-size:11px}
+  #mobileBar{padding:8px 10px calc(7px + env(safe-area-inset-bottom)); gap:6px}
+  #mobileBar button{padding:8px 2px; font-size:12px; border-radius:10px}
   #outPanel{scroll-margin-top:54px}
   body{padding-bottom:110px}
 }
@@ -202,9 +201,9 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
 #outPanel{scroll-margin-top:128px}
 #mobileBar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90;
   background:color-mix(in srgb, var(--bg2) 92%, transparent); backdrop-filter:blur(10px);
-  border-top:1px solid var(--line); padding:9px 12px; gap:8px; align-items:center}
-#mobileBar .count{flex:0 0 auto; font-size:12px; white-space:nowrap}
-#mobileBar button{flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; border-radius:11px; padding:10px 4px; font-weight:800; font-size:13px;
+  border-top:1px solid var(--line); padding:9px 12px; gap:8px; align-items:center; flex-wrap:wrap}
+#mobileBar .count{order:2; flex:1 1 100%; text-align:center; font-size:11px; white-space:nowrap}
+#mobileBar button{order:1; flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; border-radius:11px; padding:9px 4px; font-weight:800; font-size:12.5px;
   background:var(--card); color:var(--text); border:1px solid var(--line)}
 #mobileBar button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
 body{padding-bottom:64px}
@@ -1089,7 +1088,7 @@ function updateCounts(){
     (pos.length>lim ? (lang==="en" ? ` ・ ⚠ Over ${lim} chars, later tags may lose effect` : ` ・ ⚠ ${lim}文字を超えると、後ろのタグが効きにくくなります`) : "");
   pc.className = "count " + (pos.length<=lim ? "ok" : "over");
   const mb = document.getElementById("mbCount");
-  if(mb){ mb.textContent = window.innerWidth<=820 ? pc.textContent : (pos.length + "/" + lim + (pos.length>lim ? " ⚠" : "")); mb.className = pc.className; }
+  if(mb){ mb.textContent = pos.length + " / " + lim + (lang==="en" ? " chars" : " 文字") + " ・ " + (pos.length<=lim ? T("within") : T("over")) + (pos.length>lim ? " ⚠" : ""); mb.className = pc.className; }
   const jpEl = document.getElementById("outJP");
   if(jpEl) document.getElementById("jpCount").textContent = jpEl.value.length + (lang==="en"?" chars":" 文字");
   const negEl = document.getElementById("outNeg");
