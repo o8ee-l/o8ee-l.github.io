@@ -183,6 +183,7 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   .iconbtn{padding:7px 11px}
   .btn{padding:10px 15px}
   body{padding-bottom:64px}
+}
 @media (max-width:820px){
   #mobileBar{padding:8px 10px calc(7px + env(safe-area-inset-bottom)); gap:6px}
   #mobileBar button{padding:8px 2px; font-size:12px; border-radius:10px}
@@ -196,7 +197,6 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   #outPanel{grid-column:2; grid-row:4; position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto}
   #negPanel, #nijiPanel{grid-column:1 / -1}
   .wrap > section.panel:not(#negPanel):not(#nijiPanel):not(#outPanel){grid-column:1 / -1}
-}
 }
 #outPanel{scroll-margin-top:128px}
 #mobileBar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90;
