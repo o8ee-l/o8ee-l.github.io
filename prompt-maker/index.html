@@ -426,6 +426,14 @@ function coSideState(raw){
   return { c:null, s:"l" };
 }
 function optFrag(cat, opt, who){
+  if(cat.id==="hairColor" && opt.multiColors){
+    const st = storeFor(cat, who||S.active);
+    const word = ci => (ci===null || ci===undefined) ? null : cat.options[ci].frag.replace(/ hair$/, "");
+    const def = lab => { const j = cat.options.findIndex(o=>o.label===lab); return j<0 ? null : j; };
+    const cs = [word(st.co[opt._idx]) || word(def("ピンク")), word(st.co[1000+opt._idx]) || word(def("紫")), word(st.co[2000+opt._idx]) || word(def("青"))];
+    if(cs.every(Boolean)) return "three-tone hair, hair dyed in three colors (" + cs.map(c=>c + " hair").join(", ") + "), tricolor hair";
+    return opt.frag;
+  }
   if(cat.id==="eyeColor" && opt.gradColors){
     const st = storeFor(cat, who||S.active);
     const word = ci => (ci===null || ci===undefined) ? null : cat.options[ci].frag.replace(/ eyes$/, "");
@@ -611,6 +619,17 @@ function buildSection(cat){
       const grow = (key, cur, name)=>`<div class="corow ${on?"":"hidden"}" data-corow="${gi}"><span class="cname">${name}:</span>` +
         solids.map(({o,i})=>`<button class="mini-dot ${cur===i?"on":""}" data-co="${key}:${i}" style="background:${esc(o.color)}" title="${esc(o.label)}"></button>`).join("") + `</div>`;
       body += grow(gi, st.co[gi], "グラデ色1") + grow(1000+gi, st.co[1000+gi], "グラデ色2");
+    }
+  }
+  if(cat.id==="hairColor"){
+    const gi = cat.options.findIndex(o=>o.multiColors);
+    if(gi>=0){
+      const st = selStore(cat);
+      const on = isOn(cat, gi);
+      const solids = cat.options.map((o,i)=>({o,i})).filter(({o})=>o.color && o.color.indexOf("gradient")<0 && !o.multiColors);
+      const grow = (key, cur, name)=>`<div class="corow ${on?"":"hidden"}" data-corow="${gi}"><span class="cname">${name}:</span>` +
+        solids.map(({o,i})=>`<button class="mini-dot ${cur===i?"on":""}" data-co="${key}:${i}" style="background:${esc(o.color)}" title="${esc(o.label)}"></button>`).join("") + `</div>`;
+      body += grow(gi, st.co[gi], "3色カラー1") + grow(1000+gi, st.co[1000+gi], "3色カラー2") + grow(2000+gi, st.co[2000+gi], "3色カラー3");
     }
   }
   if(!visOpts.length) body += `<p class="note">—</p>`;
@@ -919,6 +938,14 @@ function buildPositive(){
 function jpLabel(cat, opt, who){
   if(cat.id==="hairColor"){
     if(opt.label==="カラフル") return "カラフルな髪";
+    if(opt.multiColors){
+      const st = storeFor(cat, who||S.active);
+      const lab = ci => (ci===null || ci===undefined) ? null : cat.options[ci].label;
+      const L1 = lab(st.co[opt._idx]) || "ピンク";
+      const L2 = lab(st.co[1000+opt._idx]) || "紫";
+      const L3 = lab(st.co[2000+opt._idx]) || "青";
+      return L1 + "と" + L2 + "と" + L3 + "の3色の髪";
+    }
     if(opt.label==="3色") return "3色の髪";
     return opt.label + "の髪";
   }
@@ -1126,7 +1153,7 @@ function afterPickInPlace(cat, idx, el){
       const row = sec.querySelector(`[data-corow="${idx}"]`);
       if(row) row.classList.toggle("hidden", !isOn(cat, idx));
     }
-    if(cat.id==="eyeColor"){
+    if(cat.id==="eyeColor" || cat.id==="hairColor"){
       sec.querySelectorAll("[data-corow]").forEach(r=>r.classList.toggle("hidden", !isOn(cat, parseInt(r.dataset.corow,10))));
     }
   }
