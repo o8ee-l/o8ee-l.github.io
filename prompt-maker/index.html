@@ -58,6 +58,7 @@ header.site{position:sticky; top:0; z-index:60; backdrop-filter:blur(10px);
   padding:8px 13px; font-size:13px; font-weight:700; box-shadow:var(--shadow)}
 .btn:hover{border-color:var(--accent); transform:translateY(-1px)}
 .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
+a.btn{text-decoration:none; display:inline-block}
 .btn.small{padding:5px 10px; font-size:12px; border-radius:9px}
 .btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
 .seg{display:inline-flex; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px}
@@ -275,7 +276,7 @@ body{padding-bottom:64px}
       <textarea class="out neg mt8" id="outNeg"></textarea>
     </div>
     <div class="rowflex mt12">
-      <button class="btn small" id="xShareBtn">𝕏 <span data-i18n="xshare">組み合わせをXで共有</span></button>
+      <a class="btn small" id="xShareBtn" href="https://twitter.com/intent/tweet" target="_blank" rel="noreferrer">𝕏 <span data-i18n="xshare">組み合わせをXで共有</span></a>
     </div>
   </section>
 
@@ -803,6 +804,7 @@ function renderSummary(){
   bar.querySelectorAll("[data-unextra]").forEach(b=>b.addEventListener("click", ()=>{
     pushUndo(); S.extra.splice(parseInt(b.dataset.unextra,10),1); afterChange();
   }));
+  updateXShare();
 }
 function togglePick(cat, idx, who, forceOff){
   pushUndo();
@@ -1422,13 +1424,21 @@ $("outNeg").addEventListener("input", e=>{ S.negEdited = e.target.value; updateC
 $("trimBtn").addEventListener("click", trimToLimit);
 $("shareBtn").addEventListener("click", shareLink);
 $("cardBtn").addEventListener("click", makeCard);
-$("xShareBtn").addEventListener("click", ()=>{
+function updateXShare(){
+  const a = document.getElementById("xShareBtn"); if(!a) return;
   const labels = [];
-  visibleCats().forEach(cat=>{ const v = getSel(cat,"A"); if(v===null||v===undefined) return;
-    (cat.type==="multi"?v:[v]).forEach(i=>{ if(cat.options[i] && cat.options[i].frag) labels.push(cat.options[i].label); }); });
-  const text = "オリキャラプロンプトメーカーで組み合わせ作ったよ💜\n" + labels.join(" / ") + "\n#HoneyLoom";
-  window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(text), "_blank");
-});
+  const collect = (who, skipShared)=>{
+    visibleCats().forEach(cat=>{
+      if(skipShared && cat.scope==="shared") return;
+      const v = getSel(cat, who); if(v===null||v===undefined) return;
+      (cat.type==="multi"?v:[v]).forEach(i=>{ if(cat.options[i] && cat.options[i].frag) labels.push(cat.options[i].label); });
+    });
+  };
+  collect("A", false);
+  if(S.mode==="pair") collect("B", true);
+  const text = "オリキャラプロンプトメーカーで組み合わせ作ったよ💜\n" + (labels.length ? labels.join(" / ") + "\n" : "") + "https://o8ee-l.github.io/prompt-maker/\n#HoneyLoom";
+  a.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+}
 $("rephraseBtn").addEventListener("click", ()=>{
   const neg = collectNegatives(); let added = 0;
   neg.forEach(n=>{ const r = DATA.rephrase[n]; if(r && !S.extra.includes(r)){ S.extra.push(r); added++; } });
