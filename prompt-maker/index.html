@@ -243,6 +243,7 @@ body{padding-bottom:64px}
       <button data-count="3">3人</button>
       <button data-count="4">4人以上</button>
     </span>
+    <span class="note hidden" id="countNote" data-i18n="countNote"></span>
     <span class="seg hidden" id="charSeg">
       <button data-char="A" class="on">A</button>
       <button data-char="B">B</button>
@@ -376,7 +377,7 @@ body{padding-bottom:64px}
 
 <div id="toast"></div>
 
-<script src="data.js?v=36"></script>
+<script src="data.js?v=37"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -391,7 +392,7 @@ const ENGINES = {
 };
 
 const I18N = {
-  ja: { title:"オリキャラプロンプトメーカー", engine:"使うエンジン", people:"人数", solo:"1人", pair:"2人",
+  ja: { title:"オリキャラプロンプトメーカー", engine:"使うエンジン", people:"人数", countNote:"3人以上は「同じデザインのグループ指定」です（選んだデザインが全員に適用されます。1人ずつ別のデザインにはできません）", solo:"1人", pair:"2人",
     limit:"文字数上限", searchPh:"🔍 項目を検索（名前・英語）", favOnly:"お気に入りのみ", undo:"戻す", clear:"全解除",
     randomAll:"全ランダム", random3:"3案ランダム", daily:"今日のおまかせ", applyTheme:"テーマ適用",
     negTitle:"ネガティブプロンプト", rephrase:"言い換えてポジティブに追加",
@@ -407,7 +408,7 @@ const I18N = {
     linkCopied:"共有リンクをコピーしました", applied:"適用しました", saved:"保存しました",
     nothingSel:"まだ何も選ばれていません", over:"上限オーバー", within:"文字数OK",
     helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3＋先頭／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。<br>・左右の表記（左目・右目、ほくろの左右、ツートンの左右など）は、キャラクター本人から見た左右です。<br>・両立しにくい組み合わせを選ぶと、出力欄の上に⚠でお知らせします（自動では消しません）。<br>・人数は上の「人数」で1人／2人／3人／4人以上を切り替えます。3人以上は、選んだデザインを使ったグループ指定として出力されます。" },
-  en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", solo:"Solo", pair:"Pair",
+  en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", countNote:"For 3 or more, the selection applies the same design to everyone (a group specification; per-character designs are not supported).", solo:"Solo", pair:"Pair",
     limit:"Char limit", searchPh:"🔍 Search items (name / English)", favOnly:"Favorites only", undo:"Undo", clear:"Clear all",
     randomAll:"Random all", random3:"3 random ideas", daily:"Today's pick", applyTheme:"Apply theme",
     negTitle:"Negative prompt", rephrase:"Rephrase into positive & add",
@@ -464,52 +465,49 @@ function coSideState(raw){
   if(typeof raw==="number") return { c: raw, s: "l" };
   return { c:null, s:"l" };
 }
-function tattooSizeIdx(who){
-  const tc = catById["tattooSize"]; if(!tc) return null;
-  const st = storeFor(tc, who||S.active);
-  const v = st.sel[tc.id]; return (v===undefined ? null : v);
-}
-function tattooSizeLabel(who){
-  const tc = catById["tattooSize"]; if(!tc) return "";
-  const v = tattooSizeIdx(who);
-  return (v===null || v===undefined || !tc.options[v]) ? "" : tc.options[v].label;
-}
-function tattooSizeEn(who){
-  const lab = tattooSizeLabel(who);
-  return lab==="大" ? "large" : (lab==="中" ? "medium-sized" : "small");
-}
-function tattooSizeJp(who){
-  const lab = tattooSizeLabel(who);
-  return lab==="大" ? "大きな" : (lab==="中" ? "中くらいの大きさの" : "小さな");
-}
 function eyeTextureLabel(who){
   const tc = catById["eyeTexture"]; if(!tc) return "";
   const v = getSel(tc, who||S.active);
   return (v===null || v===undefined || !tc.options[v]) ? "" : tc.options[v].label;
 }
-function filterEyeQuality(f){
-  if(!f || f.indexOf("detailed face")<0) return f;
-  const noHL = eyeTextureLabel("A")==="ハイライトなし";
-  const matte = eyeTextureLabel("A")==="マット";
-  if(!noHL && !matte) return f;
+function eyeStripMode(who){
+  const l = eyeTextureLabel(who||"A");
+  return l==="ハイライトなし" ? 2 : (l==="マット" ? 1 : 0);
+}
+function stripEyeReflection(f, who){
+  if(!f) return f;
+  const mode = eyeStripMode(who||"A");
+  if(!mode) return f;
   let wrap = false, body = f;
   const wm = f.match(/^\((.*):1\.3\)$/s);
   if(wm){ wrap = true; body = wm[1]; }
+  const eyeWord = /(eye|iris|irises|pupil|gaze)/i;
+  const lightWord = /(highlight|sparkle|sparkling|glitter|glossy|catchlight|reflection|shiny|shine)/i;
+  const strong = /(glossy irises|clear highlights in the eyes|sparkling eyes|glittering)/i;
   const out = body.split(", ").filter(s=>{
-    if(noHL && /highlight/i.test(s)) return false;
-    if((noHL || matte) && /glossy irises/i.test(s)) return false;
+    if(mode===2 && eyeWord.test(s) && lightWord.test(s)) return false;
+    if(strong.test(s)) return false;
     return true;
   }).join(", ");
   return wrap ? "(" + out + ":1.3)" : out;
 }
 function optFrag(cat, opt, who){
+  if(cat.id==="tattoo"){
+    const st = storeFor(cat, who||S.active);
+    const rec = (st.tat && st.tat[opt._idx]) || { p:null, s:0 };
+    const sizeEn = ["", "small", "medium-sized", "large"][rec.s||0] || "";
+    let core = opt.frag;
+    if(sizeEn) core = sizeEn + " " + core;
+    if(rec.p!==null && rec.p!==undefined && opt.places && opt.places[rec.p]) core += " " + opt.places[rec.p].frag;
+    return core;
+  }
   if(opt.places){
     const st = storeFor(cat, who||S.active);
     const mask = st.co[opt._idx] || 0;
     const sel = opt.places.filter((p,pi)=>mask & (1<<pi));
     if(opt.placeMode==="suffix"){
       const use = sel.length ? sel : [opt.places[opt.placeDefault||0]];
-      const sizeW = cat.id==="tattoo" ? tattooSizeEn(who) : "small";
+      const sizeW = "small";
       return use.map(p=>sizeW + " " + opt.frag + " " + p.frag + ", " + opt.frag + " design " + p.frag).join(", ");
     }
     if(sel.length) return sel.map(p=>p.frag).join(", ");
@@ -529,7 +527,7 @@ function optFrag(cat, opt, who){
     const def = lab => { const j = cat.options.findIndex(o=>o.label===lab); return j<0 ? null : j; };
     const c1 = word(st.co[opt._idx]) || word(def("赤"));
     const c2 = word(st.co[1000+opt._idx]) || word(def("青"));
-    if(c1 && c2) return "heterochromia, two different colored eyes, left eye " + c1 + ", right eye " + c2 + ", mismatched eye colors";
+    if(c1 && c2) return "heterochromia, two different colored eyes, the character's anatomical left eye " + c1 + ", the character's anatomical right eye " + c2 + ", mismatched eye colors";
     return opt.frag;
   }
   if(cat.id==="eyeColor" && opt.gradColors){
@@ -564,6 +562,13 @@ function optFrag(cat, opt, who){
     }
     const W2 = word(curIdx);
     if(W2) return opt.colorTemplate.replace(/\{C\}/g, W2);
+  }
+  if(cat.id==="bgColor"){
+    const bgc = catById["background"];
+    const bi = storeFor(bgc, who||S.active).sel[bgc.id];
+    const bopt = (bi===null || bi===undefined || !bgc.options[bi]) ? null : bgc.options[bi];
+    if(bopt && bopt.scene) return opt.word + " color tones, the whole background scenery tinted in " + opt.word + " tones";
+    return opt.frag;
   }
   return opt.frag;
 }
@@ -632,10 +637,10 @@ const catRoot = document.getElementById("catRoot");
 const negRoot = document.getElementById("negRoot");
 const ICONS = { gender:"👤", age:"🎂", bodyType:"📐", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️", forehead:"👆",
   sidelocks:"🎀", hairPlus:"➕", hairColor:"🎨", colorOption:"🌈", skinColor:"🖐️", eyeShape:"👀", eyeColor:"💜",
-  pupilShape:"🎯", irisMotif:"💖", eyeTexture:"🔮", eyebrows:"🤨", faceDetail:"✨", tattoo:"🦋", tattooSize:"📏", mouth:"🦷", expression:"😊", eyeExpression:"👁️", outfit:"👗", features:"🐾", poseSolo:"🧍", posePair:"👥",
+  pupilShape:"🎯", irisMotif:"💖", eyeTexture:"🔮", eyebrows:"🤨", faceDetail:"✨", tattoo:"🦋", mouth:"🦷", expression:"😊", eyeExpression:"👁️", outfit:"👗", features:"🐾", poseSolo:"🧍", posePair:"👥",
   framing:"🖼️", angle:"📐", shootStyle:"📸", gazeSolo:"👁️", gazePair:"👁️", bgColor:"🪣", background:"🏙️", bgPattern:"🧩", effects:"✨", quality:"💎" };
 const GROUPS = [
-  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","tattooSize","mouth","expression","eyeExpression","quality"] },
+  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","mouth","expression","eyeExpression","quality"] },
   { id:"g-outfit", ja:"服装", en:"Outfit", cats:["outfit"] },
   { id:"g-features", ja:"特徴", en:"Features", cats:["features"] },
   { id:"g-pose", ja:"ポーズ", en:"Pose", cats:["poseSolo","posePair","gazeSolo","gazePair"] },
@@ -713,7 +718,7 @@ function buildSection(cat){
     ).join("") + `</div>`;
   }
   cat.options.forEach((o,i)=>{
-    if(o.places){
+    if(o.places && cat.id!=="tattoo"){
       const st = selStore(cat);
       const mask = st.co[i] || 0;
       const on = isOn(cat,i);
@@ -721,6 +726,19 @@ function buildSection(cat){
         o.places.map((p,pi)=>`<button class="mini-chip ${(mask & (1<<pi))?"on":""}" data-place="${i}:${pi}">${esc(p.label)}</button>`).join("") + `</div>`;
     }
   });
+  if(cat.id==="tattoo"){
+    const st = selStore(cat);
+    cat.options.forEach((o,i)=>{
+      const on = isOn(cat,i);
+      const rec = (st.tat && st.tat[i]) || { p:null, s:0 };
+      const pIdx = (rec.p===null || rec.p===undefined) ? -1 : rec.p;
+      body += `<div class="corow ${on?"":"hidden"}" data-placerow="${i}"><span class="cname">${esc(o.label)} の配置:</span>` +
+        [`<button class="mini-chip ${pIdx===-1?"on":""}" data-tatplace="${i}:-1">未指定</button>`]
+          .concat((o.places||[]).map((p,pi)=>`<button class="mini-chip ${pIdx===pi?"on":""}" data-tatplace="${i}:${pi}">${esc(p.label)}</button>`)).join("") + `</div>`;
+      body += `<div class="corow ${on?"":"hidden"}" data-placerow="${i}"><span class="cname">${esc(o.label)} の大きさ:</span>` +
+        ["未指定","小","中","大"].map((lab,s)=>`<button class="mini-chip ${(rec.s||0)===s?"on":""}" data-tatsize="${i}:${s}">${lab}</button>`).join("") + `</div>`;
+    });
+  }
   if(cat.id==="colorOption"){
     const st = selStore(cat);
     cat.options.forEach((o,i)=>{
@@ -827,6 +845,30 @@ function buildSection(cat){
     const st = storeFor(cat, S.active);
     st.co[oi] = (st.co[oi]||0) ^ (1<<pi);
     b.classList.toggle("on", !!(st.co[oi] & (1<<pi)));
+    renderSummary(); renderOutput(); saveLS();
+  }));
+  sec.querySelectorAll("[data-tatplace]").forEach(b=>b.addEventListener("click", ()=>{
+    const [oi,pi] = b.dataset.tatplace.split(":").map(Number);
+    pushUndo();
+    const st = storeFor(cat, S.active);
+    if(!st.tat) st.tat = {};
+    const rec = st.tat[oi] || { p:null, s:0 };
+    rec.p = pi<0 ? null : pi;
+    st.tat[oi] = rec;
+    const row = b.closest(".corow");
+    if(row) row.querySelectorAll("[data-tatplace]").forEach(x=>x.classList.toggle("on", x===b));
+    renderSummary(); renderOutput(); saveLS();
+  }));
+  sec.querySelectorAll("[data-tatsize]").forEach(b=>b.addEventListener("click", ()=>{
+    const [oi,sv] = b.dataset.tatsize.split(":").map(Number);
+    pushUndo();
+    const st = storeFor(cat, S.active);
+    if(!st.tat) st.tat = {};
+    const rec = st.tat[oi] || { p:null, s:0 };
+    rec.s = sv;
+    st.tat[oi] = rec;
+    const row = b.closest(".corow");
+    if(row) row.querySelectorAll("[data-tatsize]").forEach(x=>x.classList.toggle("on", x===b));
     renderSummary(); renderOutput(); saveLS();
   }));
   sec.querySelectorAll("[data-side]").forEach(b=>b.addEventListener("click", ()=>{
@@ -975,7 +1017,7 @@ function toggleFav(key){
   saveLS(); renderCats(); restoreAnchor();
 }
 function clearCat(cat){
-  ["A","B"].forEach(w=>{ const st = storeFor(cat,w); st.sel[cat.id] = cat.type==="multi" ? [] : null; });
+  ["A","B"].forEach(w=>{ const st = storeFor(cat,w); st.sel[cat.id] = cat.type==="multi" ? [] : null; if(cat.id==="tattoo") st.tat = {}; });
   if(cat.scope==="shared"){ const st = S.shared; st.sel[cat.id] = cat.type==="multi" ? [] : null; }
 }
 CATS.concat(NEGCATS).forEach(c=>c.options.forEach(o=>{ o._key = c.id+":"+o._idx; }));
@@ -1001,7 +1043,7 @@ function collectFrags(cat, who){
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(f){ if(isBoosted(cat.id, i, who)){ if(S.engine==="niji" || S.engine==="pixai") return; f = boostWrap(f); } out.push(f); } } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(cat.id!=="eyeTexture") f = stripEyeReflection(f, who); if(f){ if(isBoosted(cat.id, i, who)){ if(S.engine==="niji" || S.engine==="pixai") return; f = boostWrap(f); } out.push(f); } } });
   return out;
 }
 function collectBoostedFrags(){
@@ -1010,7 +1052,7 @@ function collectBoostedFrags(){
     const v = getSel(cat, who);
     if(v===null || v===undefined) return;
     const idxs = cat.type==="multi" ? v : [v];
-    idxs.forEach(i=>{ if(isBoosted(cat.id, i, who)){ const o = cat.options[i]; if(o){ const f = optFrag(cat,o,who); if(f && out.indexOf(f)<0) out.push(f); } } });
+    idxs.forEach(i=>{ if(isBoosted(cat.id, i, who)){ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(cat.id!=="eyeTexture") f = stripEyeReflection(f, who); if(f && out.indexOf(f)<0) out.push(f); } } });
   };
   orderCats().forEach(cat=>{ if(cat.scope==="shared") push(cat,"A"); else { push(cat,"A"); if(S.mode==="pair") push(cat,"B"); } });
   return out;
@@ -1021,21 +1063,32 @@ function genderCountFrag(){
   const cnt = { "1girl":0, "1boy":0, other:0 };
   [a,b].forEach(x=>{ if(x==="1girl") cnt["1girl"]++; else if(x==="1boy") cnt["1boy"]++; else if(x) cnt.other++; });
   const parts = [];
+  if(cnt.other===2 && !cnt["1girl"] && !cnt["1boy"]){ parts.push("2people", "two androgynous characters"); return parts; }
   if(cnt["1girl"]===2) parts.push("2girls");
   else if(cnt["1boy"]===2) parts.push("2boys");
   else { if(cnt["1girl"]) parts.push("1girl"); if(cnt["1boy"]) parts.push("1boy"); }
-  if(cnt.other) parts.push("2people");
+  if(cnt.other===1) parts.push("one androgynous character");
+  else if(cnt.other>=2) parts.push("2people");
   return parts;
 }
+function hasAnySelection(){
+  if(S.extra && S.extra.length) return true;
+  if(S.freeText && S.freeText.trim()) return true;
+  const anyIn = st => !!(st && st.sel && Object.values(st.sel).some(v=> Array.isArray(v) ? v.length>0 : (v!==null && v!==undefined)));
+  if(anyIn(S.chars.A) || anyIn(S.chars.B) || anyIn(S.shared)) return true;
+  if(S.neg && Object.values(S.neg).some(v=> Array.isArray(v) ? v.length>0 : (v!==null && v!==undefined))) return true;
+  return false;
+}
 function buildPositive(){
+  if(!hasAnySelection()) return "";
   const eng = ENGINES[S.engine];
   const cats = orderCats();
-  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","tattooSize","mouth","expression","eyeExpression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["framing","angle","shootStyle"],["bgColor","background","bgPattern","effects"]];
+  const BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","mouth","expression","eyeExpression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["framing","angle","shootStyle"],["bgColor","background","bgPattern","effects"]];
   const blockOf = id => { const i = BLOCKS_EN.findIndex(b=>b.indexOf(id)>=0); return i<0 ? 99 : i; };
   const entriesOf = (cat, who) => collectFrags(cat, who).map(f=>({f, b: blockOf(cat.id)}));
   const quality = [], shared = [], charA = [], charB = [];
   cats.forEach(cat=>{
-    if(cat.id==="quality"){ quality.push(...collectFrags(cat,"A").map(f=>filterEyeQuality(f))); return; }
+    if(cat.id==="quality"){ quality.push(...collectFrags(cat,"A")); return; }
     if(cat.id==="gender" && S.mode==="pair") return;
     if(cat.scope==="shared") shared.push(...entriesOf(cat,"A"));
     else { charA.push(...entriesOf(cat,"A")); if(S.mode==="pair") charB.push(...entriesOf(cat,"B")); }
@@ -1044,15 +1097,17 @@ function buildPositive(){
     const gc = catById["gender"]; const gv = getSel(gc,"A");
     const gFrag = (gv===null||gv===undefined||!gc.options[gv]) ? "" : (gc.options[gv].frag||"");
     const cntN = S.count || 1;
+    const hasComp = ["framing","angle","shootStyle"].some(id=>{ const c = catById[id]; if(!c) return false; const v = getSel(c, "A"); return v!==null && v!==undefined && !!(c.options[v] && c.options[v].frag); });
+    const cen = hasComp ? ", centered solo character" : "";
     let phrase;
     if(cntN>=3){
       const numEn = cntN===3 ? "three" : "four or more";
       const gtag = gFrag==="1girl" ? (cntN===3 ? "three girls" : "four or more girls") : gFrag==="1boy" ? (cntN===3 ? "three boys" : "four or more boys") : (cntN===3 ? "three characters" : "four or more characters");
       phrase = "group portrait, exactly " + numEn + " characters, " + gtag + " in the frame, the characters standing together as a group";
     }
-    else if(gFrag==="1girl") phrase = "solo, exactly one female character, one girl only, single-character portrait, one person alone in the frame, centered solo character, 1girl";
-    else if(gFrag==="1boy") phrase = "solo, exactly one male character, one boy only, single-character portrait, one person alone in the frame, centered solo character, 1boy";
-    else phrase = "solo, exactly one character, single-character portrait, one person alone in the frame, centered solo character" + (gFrag ? ", " + gFrag : "");
+    else if(gFrag==="1girl") phrase = "solo, exactly one female character, one girl only, single-character portrait, one person alone in the frame" + cen + ", 1girl";
+    else if(gFrag==="1boy") phrase = "solo, exactly one male character, one boy only, single-character portrait, one person alone in the frame" + cen + ", 1boy";
+    else phrase = "solo, exactly one character, single-character portrait, one person alone in the frame" + cen + (gFrag ? ", " + gFrag : "");
     const gi = gFrag ? charA.findIndex(e=>e.f===gFrag) : -1;
     if(gi>=0) charA[gi] = { f: phrase, b: charA[gi].b };
     else charA.unshift({ f: phrase, b: 0 });
@@ -1063,7 +1118,7 @@ function buildPositive(){
       const v = getSel(cat, who);
       if(v===null || v===undefined) return;
       const idxs = cat.type==="multi" ? v : [v];
-      idxs.forEach(i=>{ if(isBoosted(cat.id, i, who)){ const o = cat.options[i]; if(o){ const f0 = optFrag(cat,o,who); if(f0){
+      idxs.forEach(i=>{ if(isBoosted(cat.id, i, who)){ const o = cat.options[i]; if(o){ let f0 = optFrag(cat,o,who); if(cat.id!=="eyeTexture") f0 = stripEyeReflection(f0, who); if(f0){
         const seg = cat.id==="quality" ? "quality" : (cat.scope==="shared" ? "shared" : who);
         const f = S.engine==="pixai" ? "(" + f0 + ":1.3)" : f0;
         if(!boostSegs[seg].some(e=>e.f===f)) boostSegs[seg].push({f, b: blockOf(cat.id)});
@@ -1083,7 +1138,6 @@ function buildPositive(){
     });
     return [...groups.keys()].sort((a,b)=>a-b).map(k=>groups.get(k).filter(Boolean).join(", ")).filter(Boolean).join(blockJoiner);
   };
-  boostSegs.quality = boostSegs.quality.map(e=>({ f: filterEyeQuality(e.f), b: e.b }));
   const qualitySeg = [...boostSegs.quality.map(e=>e.f), ...quality].filter(Boolean).join(", ");
   let out;
   if(eng.format==="prose" || S.engine==="chatgpt"){
@@ -1145,13 +1199,31 @@ function buildPositive(){
   return out;
 }
 function jpLabel(cat, opt, who){
+  if(cat.id==="tattoo"){
+    const st = storeFor(cat, who||S.active);
+    const rec = (st.tat && st.tat[opt._idx]) || { p:null, s:0 };
+    const sizeJ = ["", "小さな", "中くらいの大きさの", "大きな"][rec.s||0] || "";
+    const base = opt.jpBase || opt.label;
+    if(rec.p!==null && rec.p!==undefined && opt.places && opt.places[rec.p]) return opt.places[rec.p].jp + "の" + sizeJ + base;
+    return sizeJ + base;
+  }
+  if(cat.id==="bgColor"){
+    const bgc = catById["background"];
+    const bi = storeFor(bgc, who||S.active).sel[bgc.id];
+    const bopt = (bi===null || bi===undefined || !bgc.options[bi]) ? null : bgc.options[bi];
+    const pat = catById["bgPattern"];
+    const pv = storeFor(pat, who||S.active).sel[pat.id];
+    if(pv!==null && pv!==undefined && pat.options[pv] && pat.options[pv].colorTemplate) return "";
+    if(bopt && bopt.scene) return "背景全体は" + opt.label + "の色調に統一されている";
+    return opt.jp || opt.label;
+  }
   if(opt.places){
     const st = storeFor(cat, who||S.active);
     const mask = st.co[opt._idx] || 0;
     const sel = opt.places.filter((p,pi)=>mask & (1<<pi));
     if(opt.placeMode==="suffix"){
       const use = sel.length ? sel : [opt.places[opt.placeDefault||0]];
-      const sizeJ = cat.id==="tattoo" ? tattooSizeJp(who) : "";
+      const sizeJ = "";
       return use.map(p=>p.jp + "\u306e" + sizeJ + (opt.jpBase||opt.label)).join("\u3001");
     }
     if(sel.length) return sel.map(p=>p.jp).join("\u3001");
@@ -1164,7 +1236,7 @@ function jpLabel(cat, opt, who){
     const def = l => { const j = cat.options.findIndex(o=>o.label===l); return j<0 ? null : cat.options[j].label; };
     const L1 = EW[lab(st.co[opt._idx]) || def("赤")] || (lab(st.co[opt._idx]) || def("赤"));
     const L2 = EW[lab(st.co[1000+opt._idx]) || def("青")] || (lab(st.co[1000+opt._idx]) || def("青"));
-    return "オッドアイ、左目が" + L1 + "で右目が" + L2 + "、それぞれの色がはっきり分かれた個性的な目元";
+    return "オッドアイ、キャラクター本人から見て左目が" + L1 + "で右目が" + L2 + "、それぞれの色がはっきり分かれた個性的な目元";
   }
   if(cat.id==="bgPattern" && opt.colorTemplate){
     const bgc2 = catById["bgColor"];
@@ -1201,7 +1273,6 @@ function jpLabel(cat, opt, who){
     const EW = {"赤":"赤色","青":"青色","紫":"紫色","金":"金色","緑":"緑色","茶":"茶色"};
     return opt.label==="オッドアイ" ? "オッドアイ、左右で色の違う瞳" : (EW[opt.label] || opt.label) + "の瞳";
   }
-  if(cat.id==="bgColor") return "";
   if((cat.id==="background" || cat.id==="bgPattern") && opt.colorTemplate){
     const bgc = catById["bgColor"];
     const selIdx = storeFor(bgc, who||S.active).sel[bgc.id];
@@ -1217,7 +1288,7 @@ function jpLabel(cat, opt, who){
     if(opt.sideColor){
       const cs = coSideState(raw);
       const L = lab(cs.c) || lab(curIdx);
-      return (L ? L + "の" : "") + opt.label + (cs.s==="r" ? "、右側" : "、左側");
+      return (L ? L + "の" : "") + opt.label + (cs.s==="r" ? "、キャラクター本人から見て右側" : "、キャラクター本人から見て左側");
     }
     if(typeof raw==="number") return lab(raw) + "の" + opt.label;
     const L2 = lab(curIdx);
@@ -1231,7 +1302,7 @@ function collectJp(cat, who){
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ if(!optFrag(cat,o,who)) return; const f = jpLabel(cat,o,who); if(f) out.push(f); } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ if(cat.id==="irisMotif" && o.label==="キラキラ" && eyeTextureLabel(who)==="ハイライトなし") return; if(!optFrag(cat,o,who)) return; const f = jpLabel(cat,o,who); if(f) out.push(f); } });
   return out;
 }
 function genderCountJp(){
@@ -1240,13 +1311,16 @@ function genderCountJp(){
   const cnt = { "1girl":0, "1boy":0, other:0 };
   [a,b].forEach(x=>{ if(x==="1girl") cnt["1girl"]++; else if(x==="1boy") cnt["1boy"]++; else if(x) cnt.other++; });
   const parts = [];
+  if(cnt.other===2 && !cnt["1girl"] && !cnt["1boy"]){ parts.push("中性的なキャラクター2人"); return parts; }
   if(cnt["1girl"]) parts.push(cnt["1girl"]>1 ? "女の子2人" : "女の子");
   if(cnt["1boy"]) parts.push(cnt["1boy"]>1 ? "男の子2人" : "男の子");
-  if(cnt.other) parts.push("2人");
+  if(cnt.other===1) parts.push("中性的なキャラクター1人");
+  else if(cnt.other>=2) parts.push("2人");
   return parts;
 }
 function buildJapanese(){
-  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","tattooSize","mouth","expression","eyeExpression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["framing","angle","shootStyle"],["bgColor","background","bgPattern","effects"],["quality"]];
+  if(!hasAnySelection()) return "";
+  const BLOCKS = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","mouth","expression","eyeExpression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["framing","angle","shootStyle"],["bgColor","background","bgPattern","effects"],["quality"]];
   const byCat = (who)=>{
     const m = {};
     orderCats().forEach(cat=>{
@@ -1297,9 +1371,10 @@ function buildJapanese(){
     const gFrag2 = (gv2===null||gv2===undefined||!gc2.options[gv2]) ? "" : (gc2.options[gv2].frag||"");
     const who2 = gFrag2==="1boy" ? "男の子" : (gFrag2==="1girl" ? "女の子" : "キャラクター");
     const cntN2 = S.count || 1;
+    const hasComp2 = ["framing","angle","shootStyle"].some(id=>{ const c = catById[id]; if(!c) return false; const v = getSel(c, "A"); return v!==null && v!==undefined && !!(c.options[v] && c.options[v].frag); });
     const head2 = cntN2>=3
       ? (cntN2===3 ? "キャラクター3人。画面内には3人のキャラクターだけを配置する。3人のキャラクターが並んだグループポートレート構図。" : "キャラクター4人以上。画面内に4人以上のキャラクターを配置する。グループポートレート構図。")
-      : who2 + "1人のみ。画面内には1人のキャラクターだけを配置する。人物を画面の中央に配置した、単独キャラクターのポートレート構図。";
+      : who2 + "1人のみ。画面内には1人のキャラクターだけを配置する。" + (hasComp2 ? "人物を画面の中央に配置した、単独キャラクターのポートレート構図。" : "単独キャラクターのポートレート構図。");
     const body2 = renderBlocks(byCat("A"), null);
     out = body2 ? head2 + "\n" + body2 : head2;
     const seenS = new Set();
@@ -1331,6 +1406,7 @@ function collectNegatives(){
   return out;
 }
 function buildNegative(){
+  if(!hasAnySelection()) return "";
   const eng = ENGINES[S.engine];
   const neg = collectNegatives();
   if(eng.neg==="separate") return neg.join(", ");
@@ -1391,7 +1467,7 @@ function findConflicts(){
       msgs.push(prefix + "糸目と「瞳の色・瞳孔の形状・虹彩の装飾」が選ばれています。糸目では瞳が見えにくくなるので、どちらか外すのがおすすめです");
     }
     if(hasLabel("eyeTexture","ハイライトなし") && hasLabel("irisMotif","キラキラ")){
-      msgs.push(prefix + "「ハイライトなし」と「虹彩の装飾：キラキラ」が両方選ばれています");
+      msgs.push(prefix + "「ハイライトなし」と「虹彩の装飾：キラキラ」が両方選ばれています。キラキラは光の反射表現のため、ハイライトなしが優先され反射表現は自動で除外されます");
     }
     if(hasLabel("eyeTexture","ハイライトなし") && hasLabel("quality","顔・目をきれいに")){
       msgs.push(prefix + "「ハイライトなし」が優先され、品質「顔・目をきれいに」の瞳のハイライト表現は自動で除外されます");
@@ -1410,6 +1486,24 @@ function findConflicts(){
     });
     if(hasLabel("colorOption","ツートン") && hasLabel("hairColor","3色")){
       msgs.push(prefix + "配色オプション「ツートン」と髪色「3色」が両方選ばれています。配色方式が重なります");
+    }
+    const hlSel = selOf("hairLength"); const hlCat = catById["hairLength"];
+    const hlLabel = (hlSel===null || hlSel===undefined || !hlCat || !hlCat.options[hlSel]) ? "" : hlCat.options[hlSel].label;
+    const longHair = ["ロングストレート","ウェーブロング","ロングウルフ","ロングバング・マッシュウルフ","ローツインテール","ロング"].filter(l=>hasLabel("hair",l));
+    const shortHair = ["ショート","ボブ","ピクシーカット","坊主","マッシュ","韓国マッシュ","コンパクトヘア","ショートウルフ"].filter(l=>hasLabel("hair",l));
+    if((hlLabel==="ショート" || hlLabel==="ベリーショート") && longHair.length){
+      msgs.push(prefix + "「髪の長さ：" + hlLabel + "」と「髪型：" + longHair[0] + "」が両方選ばれています。髪の長さの指定が矛盾しています");
+    }
+    if((hlLabel==="ロング" || hlLabel==="超ロング") && shortHair.length){
+      msgs.push(prefix + "「髪の長さ：" + hlLabel + "」と「髪型：" + shortHair[0] + "」が両方選ばれています。髪の長さの指定が矛盾しています");
+    }
+    if(hasLabel("hairTexture","ストレート")){
+      const curlHair = ["スパイラルパーマ","パーマ","縦ロール"].filter(l=>hasLabel("hair",l));
+      if(curlHair.length) msgs.push(prefix + "「髪の質感：ストレート」と「髪型：" + curlHair[0] + "」が両方選ばれています。質感の指定が矛盾しています");
+    }
+    if(hasLabel("hair","アップバング")){
+      const heavyBangs = ["重め前髪","厚め前髪","目隠れ前髪","目隠れロング"].filter(l=>hasLabel("bangs",l));
+      if(heavyBangs.length) msgs.push(prefix + "アップバングと「前髪：" + heavyBangs[0] + "」が両方選ばれています。前髪全体を持ち上げるアップバングと額を覆う前髪は両立しにくい組み合わせです");
     }
     const mouthSel = selOf("mouth");
     if(Array.isArray(mouthSel) && mouthSel.length && hasLabel("expression","無表情")){
@@ -1430,6 +1524,19 @@ function findConflicts(){
   }
   if(hasLabelShared("effects","モノクロ") && hasLabelShared("effects","セピア")){
     msgs.push("エフェクト「モノクロ」と「セピア」が両方選ばれています");
+  }
+  const bgCat = catById["background"], bgcCat = catById["bgColor"];
+  if(bgCat && bgcCat){
+    const bv = getSel(bgCat, "A"); const cv = getSel(bgcCat, "A");
+    if(bv!==null && bv!==undefined && cv!==null && cv!==undefined){
+      const bo = bgCat.options[bv], co = bgcCat.options[cv];
+      if(bo && bo.fixedColor && co){
+        const okMap = { white:["銀白"], black:["黒"], gradient:["紫","黒"] };
+        if(!((okMap[bo.fixedColor]||[]).includes(co.label))){
+          msgs.push("背景の種類「" + bo.label + "」には固定の色がありますが、背景の色「" + co.label + "」が選ばれています。背景の色の指定が矛盾しています");
+        }
+      }
+    }
   }
   return msgs;
 }
@@ -1729,6 +1836,7 @@ function applyI18n(){
 }
 function syncControls(){
   $("engineSel").value = S.engine;
+  const cn = $("countNote"); if(cn) cn.classList.toggle("hidden", (S.count||1)<3);
   document.querySelectorAll("#modeSeg button").forEach(b=>b.classList.toggle("on", (parseInt(b.dataset.count,10)||1)===(S.count||1)));
   $("charSeg").classList.toggle("hidden", S.mode!=="pair");
   document.querySelectorAll("#charSeg button").forEach(b=>b.classList.toggle("on", b.dataset.char===S.active));
