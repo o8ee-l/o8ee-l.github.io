@@ -118,6 +118,8 @@ a.btn{text-decoration:none; display:inline-block}
 .chipbtn .fav.faved{color:var(--warn)}
 .newbadge{display:inline-block; background:var(--accent2); color:#fff; font-size:9.5px; font-weight:900;
   border-radius:5px; padding:1px 5px; margin-left:6px; vertical-align:2px; letter-spacing:.05em}
+.warnbadge{display:inline-block; background:#e8a13a; color:#fff; font-size:9.5px; font-weight:900;
+  border-radius:5px; padding:1px 5px; margin-left:6px; vertical-align:2px}
 .imggrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px}
 .imgcard{position:relative; border:2px solid var(--line); border-radius:13px; overflow:hidden; background:var(--card2); padding:0; text-align:center}
 .imgcard img{width:100%; aspect-ratio:3/4; object-fit:cover; object-position:50% 0; display:block}
@@ -588,7 +590,7 @@ function buildSection(cat){
     }
   } else {
     body += `<div class="chips">` + visOpts.map(({o,i})=>
-      `<button class="chipbtn ${isOn(cat,i)?"on":""}" data-pick="${i}">${esc(o.label)}${o.isNew?'<span class="newbadge">NEW</span>':""}${favBtn(o)}</button>`
+      `<button class="chipbtn ${isOn(cat,i)?"on":""}" data-pick="${i}">${esc(o.label)}${o.isNew?'<span class="newbadge">NEW</span>':""}${warnBadge(o)}${favBtn(o)}</button>`
     ).join("") + `</div>`;
   }
   if(cat.id==="colorOption"){
@@ -733,10 +735,11 @@ function renderCats(){
     gCats.forEach(cat=>{ bodyWrap.appendChild(buildSection(cat)); });
   });
 }
+function warnBadge(o){ return o.warnPixai ? '<span class="warnbadge">PixAIでは出にくい</span>' : ""; }
 function imgCard(cat,o,i){
   const inner = o.img ? `<img loading="lazy" src="${esc(o.img)}" alt="${esc(o.label)}">`
                       : `<div class="texttile">${esc(o.label)}</div>`;
-  return `<div class="imgcard ${isOn(cat,i)?"on":""}" data-pick="${i}" role="button">${inner}<div class="cap">${esc(o.label)}${o.isNew?'<span class="newbadge">NEW</span>':""}</div>${favBtn(o)}</div>`;
+  return `<div class="imgcard ${isOn(cat,i)?"on":""}" data-pick="${i}" role="button">${inner}<div class="cap">${esc(o.label)}${o.isNew?'<span class="newbadge">NEW</span>':""}${warnBadge(o)}</div>${favBtn(o)}</div>`;
 }
 function renderNeg(){
   negRoot.innerHTML = "";
