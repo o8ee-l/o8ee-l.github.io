@@ -179,6 +179,14 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   .iconbtn{padding:7px 11px}
   .btn{padding:10px 15px}
   body{padding-bottom:64px}
+@media (min-width:1024px){
+  .wrap{max-width:1460px; display:grid; grid-template-columns:minmax(0,1fr) 400px; column-gap:18px; align-items:start}
+  .wrap > .toolbar, .wrap > #summaryBar{grid-column:1 / -1}
+  #catRoot{grid-column:1; grid-row:4}
+  #outPanel{grid-column:2; grid-row:4; position:sticky; top:12px; max-height:calc(100vh - 24px); overflow:auto}
+  #negPanel, #nijiPanel{grid-column:1 / -1}
+  .wrap > section.panel:not(#negPanel):not(#nijiPanel):not(#outPanel){grid-column:1 / -1}
+}
 }
 #mobileBar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90;
   background:color-mix(in srgb, var(--bg2) 92%, transparent); backdrop-filter:blur(10px);
@@ -642,6 +650,8 @@ function buildSection(cat){
     const idx = parseInt(b.dataset.pick,10);
     togglePick(cat, idx);
     afterPickInPlace(cat, idx, b);
+    const o = cat.options[idx];
+    if(o && o.warnPixai && S.engine==="pixai" && isOn(cat, idx)) toast("⚠ 「" + o.label + "」はPixAIでは出にくい項目です");
   }));
   sec.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click", ev=>{
     ev.stopPropagation();
@@ -735,7 +745,7 @@ function renderCats(){
     gCats.forEach(cat=>{ bodyWrap.appendChild(buildSection(cat)); });
   });
 }
-function warnBadge(o){ return o.warnPixai ? '<span class="warnbadge">PixAIでは出にくい</span>' : ""; }
+function warnBadge(o){ return ""; }
 function imgCard(cat,o,i){
   const inner = o.img ? `<img loading="lazy" src="${esc(o.img)}" alt="${esc(o.label)}">`
                       : `<div class="texttile">${esc(o.label)}</div>`;
