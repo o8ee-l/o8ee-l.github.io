@@ -426,6 +426,15 @@ function coSideState(raw){
   return { c:null, s:"l" };
 }
 function optFrag(cat, opt, who){
+  if(cat.id==="eyeColor" && opt.gradColors){
+    const st = storeFor(cat, who||S.active);
+    const word = ci => (ci===null || ci===undefined) ? null : cat.options[ci].frag.replace(/ eyes$/, "");
+    const def = lab => { const j = cat.options.findIndex(o=>o.label===lab); return j<0 ? null : j; };
+    const c1 = word(st.co[opt._idx]) || word(def("紫"));
+    const c2 = word(st.co[1000+opt._idx]) || word(def("ピンク"));
+    if(c1 && c2) return "gradient eyes, " + c1 + " and " + c2 + " gradient irises, two-tone gradient eyes";
+    return opt.frag;
+  }
   if(cat.id==="background" && opt.colorTemplate){
     const bgc = catById["bgColor"];
     const selIdx = storeFor(bgc, who||S.active).sel[bgc.id];
@@ -592,6 +601,17 @@ function buildSection(cat){
         }
       }
     });
+  }
+  if(cat.id==="eyeColor"){
+    const gi = cat.options.findIndex(o=>o.gradColors);
+    if(gi>=0){
+      const st = selStore(cat);
+      const on = isOn(cat, gi);
+      const solids = cat.options.map((o,i)=>({o,i})).filter(({o})=>o.color && o.color.indexOf("gradient")<0 && !o.gradColors);
+      const grow = (key, cur, name)=>`<div class="corow ${on?"":"hidden"}" data-corow="${gi}"><span class="cname">${name}:</span>` +
+        solids.map(({o,i})=>`<button class="mini-dot ${cur===i?"on":""}" data-co="${key}:${i}" style="background:${esc(o.color)}" title="${esc(o.label)}"></button>`).join("") + `</div>`;
+      body += grow(gi, st.co[gi], "グラデ色1") + grow(1000+gi, st.co[1000+gi], "グラデ色2");
+    }
   }
   if(!visOpts.length) body += `<p class="note">—</p>`;
   sec.innerHTML = head + `<div class="cat-body ${foldedCats.has(cat.id)?"hidden":""}">` + body + `</div>`;
@@ -902,7 +922,16 @@ function jpLabel(cat, opt, who){
     if(opt.label==="3色") return "3色の髪";
     return opt.label + "の髪";
   }
-  if(cat.id==="eyeColor"){ return opt.label==="オッドアイ" ? "オッドアイ" : opt.label + "の目"; }
+  if(cat.id==="eyeColor"){
+    if(opt.gradColors){
+      const st = storeFor(cat, who||S.active);
+      const lab = ci => (ci===null || ci===undefined) ? null : cat.options[ci].label;
+      const L1 = lab(st.co[opt._idx]) || "紫";
+      const L2 = lab(st.co[1000+opt._idx]) || "ピンク";
+      return L1 + "と" + L2 + "のグラデーションの目";
+    }
+    return opt.label==="オッドアイ" ? "オッドアイ" : opt.label + "の目";
+  }
   if(cat.id==="bgColor") return "";
   if(cat.id==="background" && opt.colorTemplate){
     const bgc = catById["bgColor"];
@@ -1096,6 +1125,9 @@ function afterPickInPlace(cat, idx, el){
     if(cat.id==="colorOption"){
       const row = sec.querySelector(`[data-corow="${idx}"]`);
       if(row) row.classList.toggle("hidden", !isOn(cat, idx));
+    }
+    if(cat.id==="eyeColor"){
+      sec.querySelectorAll("[data-corow]").forEach(r=>r.classList.toggle("hidden", !isOn(cat, parseInt(r.dataset.corow,10))));
     }
   }
   refreshGroupBadge(cat);
