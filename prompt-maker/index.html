@@ -70,6 +70,8 @@ header.site{position:sticky; top:0; z-index:60; backdrop-filter:blur(10px);
 .schip{display:inline-flex; align-items:center; gap:5px; background:var(--chip); border:1px solid var(--line);
   border-radius:999px; padding:3px 6px 3px 10px; font-size:12px; font-weight:700}
 .schip .who{color:var(--accent2); font-weight:900}
+.schip{cursor:pointer}
+.schip.boost{border-color:var(--accent); box-shadow:0 0 0 1.5px var(--accent)}
 .schip button{border:none; background:transparent; color:var(--muted); font-size:14px; line-height:1; padding:2px 4px}
 .schip button:hover{color:var(--bad)}
 .cat{background:linear-gradient(180deg,var(--card),var(--card2)); border:1px solid var(--line); border-radius:20px;
@@ -394,7 +396,7 @@ const T = k => (I18N[lang] && I18N[lang][k]) || I18N.ja[k] || k;
 function emptyChar(){ return { sel:{}, co:{} }; }
 function emptyState(){ return { engine:"pixai", mode:"solo", active:"A",
   chars:{ A:emptyChar(), B:emptyChar() }, shared:{ sel:{}, co:{} },
-  neg:{}, locks:{}, favs:[], extra:[], order:null, limit:null, freeText:"", outEdited:null, negEdited:null, jpEdited:null }; }
+  neg:{}, locks:{}, favs:[], extra:[], boost:[], order:null, limit:null, freeText:"", outEdited:null, negEdited:null, jpEdited:null }; }
 let S = emptyState();
 let undoStack = [];
 let favOnly = false, searchQuery = "";
@@ -737,7 +739,8 @@ function renderSummary(){
     idxs.forEach(i=>{
       const o = cat.options[i]; if(!o || !o.frag) return;
       const whoTag = (S.mode==="pair" && cat.scope==="char") ? `<span class="who">${who}</span>` : "";
-      chips.push(`<span class="schip">${whoTag}${esc(catTitle(cat))}: ${esc(o.label)}<button data-unpick="${cat.id}:${i}:${who}">×</button></span>`);
+      const bon = isBoosted(cat.id, i, who);
+      chips.push(`<span class="schip${bon?" boost":""}" data-boost="${boostKey(cat.id, i, who)}" title="タップで強調（出にくい要素を強める）">${bon?"⚡":""}${whoTag}${esc(catTitle(cat))}: ${esc(o.label)}<button data-unpick="${cat.id}:${i}:${who}">×</button></span>`);
     });
   };
   visibleCats().forEach(cat=>{
@@ -749,6 +752,15 @@ function renderSummary(){
   bar.querySelectorAll("[data-unpick]").forEach(b=>b.addEventListener("click", ()=>{
     const [cid, idx, who] = b.dataset.unpick.split(":");
     togglePick(catById[cid], parseInt(idx,10), who, true); afterChange();
+  }));
+  bar.querySelectorAll("[data-boost]").forEach(ch=>ch.addEventListener("click", e=>{
+    if(e.target.closest("button")) return;
+    pushUndo();
+    const k = ch.dataset.boost;
+    if(!Array.isArray(S.boost)) S.boost = [];
+    const p = S.boost.indexOf(k);
+    if(p>=0) S.boost.splice(p,1); else S.boost.push(k);
+    afterChange();
   }));
   bar.querySelectorAll("[data-unextra]").forEach(b=>b.addEventListener("click", ()=>{
     pushUndo(); S.extra.splice(parseInt(b.dataset.unextra,10),1); afterChange();
@@ -788,12 +800,18 @@ function orderCats(){
   vis.forEach(c=>{ if(byId[c.id]) out.push(c); });
   return out;
 }
+function boostKey(catId, idx, who){ return catId+":"+idx+":"+who; }
+function isBoosted(catId, idx, who){ return Array.isArray(S.boost) && S.boost.indexOf(boostKey(catId, idx, who))>=0; }
+function boostWrap(f){
+  if(S.engine==="pixai") return "("+f+":1.3)";
+  return f+", "+f;
+}
 function collectFrags(cat, who){
   const v = getSel(cat, who);
   if(v===null || v===undefined) return [];
   const idxs = cat.type==="multi" ? v : [v];
   const out = [];
-  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ const f = optFrag(cat,o,who); if(f) out.push(f); } });
+  idxs.forEach(i=>{ const o = cat.options[i]; if(o){ let f = optFrag(cat,o,who); if(f){ if(isBoosted(cat.id, i, who)) f = boostWrap(f); out.push(f); } } });
   return out;
 }
 function genderCountFrag(){
