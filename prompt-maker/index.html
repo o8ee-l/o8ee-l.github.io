@@ -1073,6 +1073,15 @@ function afterChange(){
 
 /* ---------- tools ---------- */
 function rnd(n){ return Math.floor(Math.random()*n); }
+function applyEyeClash(w){
+  const es = catById["eyeShape"]; if(!es) return;
+  const idx = storeFor(es, w).sel["eyeShape"];
+  const opt = (idx===null || idx===undefined) ? null : es.options[idx];
+  if(opt && (opt.frag||"").indexOf("closed eyes") >= 0){
+    const ec = catById["eyeColor"]; if(ec) storeFor(ec, w).sel["eyeColor"] = null;
+    const pm = catById["pupilMotif"]; if(pm) storeFor(pm, w).sel["pupilMotif"] = [];
+  }
+}
 function randomizeCat(cat, target){
   if(S.locks[cat.id]) return;
   const targets = target ? [target] : (cat.scope==="char" ? (S.mode==="pair"?["A","B"]:[S.active]) : ["A"]);
@@ -1080,8 +1089,8 @@ function randomizeCat(cat, target){
     const st = storeFor(cat, w);
     const pool = cat.options.map((o,i)=>({o,i})).filter(({o})=>!o.noRandom && o.frag!==undefined);
     if(cat.type==="multi"){
-      const picks = pool.filter(()=>Math.random()<0.28).map(({i})=>i);
-      st.sel[cat.id] = picks.slice(0,3);
+      if(!pool.length) return;
+      st.sel[cat.id] = [pool[rnd(pool.length)].i];
     } else {
       if(!pool.length) return;
       st.sel[cat.id] = pool[rnd(pool.length)].i;
@@ -1094,6 +1103,7 @@ function randomizeCat(cat, target){
         }
       });
     }
+    applyEyeClash(w);
   });
 }
 function randomizeAll(){
