@@ -975,6 +975,7 @@ function buildPositive(){
   return out;
 }
 function jpLabel(cat, opt, who){
+  if(opt.jp) return opt.jp;
   if(cat.id==="hairColor"){
     if(opt.label==="カラフル") return "カラフルな髪";
     if(opt.multiColors){
