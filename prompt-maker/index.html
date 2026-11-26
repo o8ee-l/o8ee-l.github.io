@@ -177,16 +177,14 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   .btn{padding:10px 15px}
   body{padding-bottom:64px}
 }
-#mobileBar{display:none}
-@media (max-width:820px){
-  #mobileBar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90;
-    background:color-mix(in srgb, var(--bg2) 92%, transparent); backdrop-filter:blur(10px);
-    border-top:1px solid var(--line); padding:9px 12px; gap:8px; align-items:center}
-  #mobileBar .count{flex:1; font-size:12px}
-  #mobileBar button{border-radius:11px; padding:10px 14px; font-weight:800; font-size:13.5px;
-    background:var(--card); color:var(--text); border:1px solid var(--line)}
-  #mobileBar button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
-}
+#mobileBar{display:flex; position:fixed; left:0; right:0; bottom:0; z-index:90;
+  background:color-mix(in srgb, var(--bg2) 92%, transparent); backdrop-filter:blur(10px);
+  border-top:1px solid var(--line); padding:9px 12px; gap:8px; align-items:center}
+#mobileBar .count{flex:1; font-size:12px}
+#mobileBar button{border-radius:11px; padding:10px 14px; font-weight:800; font-size:13.5px;
+  background:var(--card); color:var(--text); border:1px solid var(--line)}
+#mobileBar button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
+body{padding-bottom:64px}
 </style>
 </head>
 <body>
@@ -333,6 +331,7 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
 <div id="mobileBar">
   <span class="count ok" id="mbCount"></span>
   <button id="mbJump">⬇ <span data-i18n="output">出力プロンプト</span></button>
+  <button id="mbCopyJp">📋 日本語</button>
   <button id="mbCopy" class="primary">📋 <span data-i18n="copy">コピー</span></button>
 </div>
 
@@ -492,12 +491,12 @@ function catTitle(c){ return lang==="en" ? (c.titleEn||c.title) : c.title; }
 /* ---------- rendering ---------- */
 const catRoot = document.getElementById("catRoot");
 const negRoot = document.getElementById("negRoot");
-const ICONS = { gender:"👤", age:"🎂", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️",
+const ICONS = { gender:"👤", age:"🎂", bodyType:"📐", hairLength:"📏", hairTexture:"🍃", hair:"💇", bangs:"✂️",
   sidelocks:"🎀", hairPlus:"➕", hairColor:"🎨", colorOption:"🌈", skinColor:"🖐️", eyeShape:"👀", eyeColor:"💜",
   pupilMotif:"💖", eyebrows:"🤨", expression:"😊", outfit:"👗", features:"🐾", camera:"📷", poseSolo:"🧍", posePair:"👥",
   framing:"🖼️", angle:"📐", gazeSolo:"👁️", gazePair:"👁️", bgColor:"🪣", background:"🏙️", effects:"✨", quality:"💎" };
 const GROUPS = [
-  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","expression","quality"] },
+  { id:"g-main", ja:"メイン（キャラメイク）", en:"Main — Character Make", cats:["gender","age","bodyType","hairLength","hairTexture","hair","bangs","sidelocks","hairPlus","hairColor","colorOption","skinColor","eyeShape","eyeColor","pupilMotif","eyebrows","expression","quality"] },
   { id:"g-outfit", ja:"服装", en:"Outfit", cats:["outfit"] },
   { id:"g-features", ja:"特徴", en:"Features", cats:["features"] },
   { id:"g-pose", ja:"ポーズ", en:"Pose", cats:["poseSolo","posePair","gazeSolo","gazePair"] },
@@ -1350,6 +1349,7 @@ $("copyBtn").addEventListener("click", ()=>{
   copyText($("outPos").value, $("outPos")).then(ok=>{ if(ok) pushHistory(); });
 });
 $("mbCopy").addEventListener("click", ()=>$("copyBtn").click());
+$("mbCopyJp").addEventListener("click", ()=>$("copyJpBtn").click());
 $("mbJump").addEventListener("click", ()=>{ $("outPanel").scrollIntoView({ behavior:"smooth", block:"start" }); });
 $("copyNegBtn").addEventListener("click", ()=>{
   copyText($("outNeg").value, $("outNeg"));
