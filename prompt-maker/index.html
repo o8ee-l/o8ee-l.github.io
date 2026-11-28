@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <script>
-/* アクセス解析（Google Analytics）: 測定IDを設定すると有効になります */
-window.GA_MEASUREMENT_ID = "";
+/* アクセス解析（Google Analytics）: 測定ID（G-XXXX…）を設定し、利用者が同意した場合のみ計測します。空欄の間は完全に無効です */
+window.GA_MEASUREMENT_ID = "G-YWBSQK9TPK";
 </script>
 <style>
 :root{
@@ -197,12 +197,12 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   #outPanel{scroll-margin-top:54px}
   body{padding-bottom:110px}
 }
-@media (min-width:880px){
-  .wrap{max-width:1460px; display:grid; grid-template-columns:minmax(0,1fr) 370px; column-gap:18px; align-items:start}
+@media (min-width:768px){
+  .wrap{max-width:1460px; display:grid; grid-template-columns:minmax(0,1fr) 320px; column-gap:18px; align-items:start}
   .wrap > .toolbar{grid-column:1 / -1}
   .wrap > #summaryBar{grid-column:1}
   #catRoot{grid-column:1; grid-row:4}
-  #outPanel{grid-column:2; grid-row:4; position:sticky; top:70px; max-height:calc(100vh - 164px); overflow:auto}
+  #outPanel{grid-column:2; grid-row:4; position:sticky; top:70px; max-height:calc(100vh - 84px); overflow:auto}
   #outPanel .outhead{position:sticky; top:-14px; z-index:3; margin:-14px -14px 0; padding:14px 14px 8px; background:var(--card); border-radius:17px 17px 0 0}
   #negPanel, #nijiPanel{grid-column:1 / -1}
   .wrap > section.panel:not(#negPanel):not(#nijiPanel):not(#outPanel){grid-column:1 / -1}
@@ -216,6 +216,75 @@ input[type="color"]{width:40px; height:32px; border:1px solid var(--line); borde
   background:var(--card); color:var(--text); border:1px solid var(--line)}
 #mobileBar button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border:none}
 body{padding-bottom:64px}
+
+/* ===== UI improvement (debug-lab) Stage A/C/D ===== */
+@media (min-width:768px){
+  #mobileBar{display:none}
+  body{padding-bottom:24px}
+}
+.modal .box h3{margin:0 0 10px; font-family:"Zen Maru Gothic"; font-weight:900; font-size:17px}
+.modal .box .dlg-btns{display:flex; gap:8px; justify-content:flex-end; margin-top:16px}
+#editHoldBar{border:1.5px solid var(--warn); background:color-mix(in srgb, var(--warn) 12%, transparent); border-radius:10px; padding:7px 10px; font-size:12px; font-weight:700}
+.abseg{display:inline-flex; background:var(--card); border:1px solid var(--accent); border-radius:999px; padding:2px; gap:2px; flex:0 0 auto; align-items:center}
+.abseg button{border:none; background:transparent; color:var(--muted); border-radius:999px; padding:4px 13px; font-weight:900; font-size:12.5px; min-height:32px}
+.abseg button.on{background:var(--chip-on); color:#fff}
+.abseg .ablabel{font-size:11px; color:var(--muted); font-weight:800; padding:0 2px 0 6px}
+#sheetBackdrop{display:none}
+#sheetCloseBtn{display:none}
+@media (max-width:767px){
+  #summaryBar{max-height:64px}
+  #mobileBar{flex-wrap:nowrap; padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  #mobileBar .count{order:0; flex:0 1 auto; text-align:left; overflow:hidden; text-overflow:ellipsis}
+  #mobileBar button{min-height:44px}
+  body.sheet-open{overflow:hidden}
+  #sheetBackdrop{display:block; position:fixed; inset:0; background:rgba(10,6,20,.55); z-index:110; opacity:0; pointer-events:none; transition:.2s}
+  body.sheet-open #sheetBackdrop{opacity:1; pointer-events:auto}
+  body.sheet-open #outPanel{position:fixed; left:0; right:0; bottom:0; top:auto; z-index:120;
+    max-height:82dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border-radius:18px 18px 0 0; margin:0; padding-bottom:calc(14px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+  body.sheet-open #sheetCloseBtn{display:inline-block}
+  /* シート内では見出し＋操作ボタン行を上部に固定し、全解除・コピー等に
+     本文スクロールなしで常に届くようにする（PC版の sticky パネル見出しと同じ方式） */
+  body.sheet-open #outPanel .outhead{position:sticky; top:-14px; z-index:3; margin:-14px -14px 0;
+    padding:14px 14px 8px; background:var(--card); border-radius:18px 18px 0 0}
+  /* 全解除の確認ダイアログはシート（z-index:120）より前面に出す。
+     シート内から全解除を押してもダイアログがシートの裏に隠れないようにするため */
+  #clearModal{z-index:140}
+  .seg button{min-height:44px; padding:9px 15px}
+  .btn{min-height:44px}
+  .btn.small{min-height:40px}
+  .iconbtn{min-height:40px; padding:7px 11px}
+  .chipbtn{min-height:44px}
+  .mini-chip{min-height:36px; padding:7px 13px}
+  .abseg button{min-height:44px; padding:9px 16px}
+  .schip button{padding:6px 8px}
+}
+
+/* ===== GA consent / notice popup (debug-lab) ===== */
+#consentBanner{position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:130;
+  max-width:720px; margin:0 auto; background:var(--card); border:1.5px solid var(--accent); border-radius:16px;
+  padding:14px 16px; box-shadow:var(--shadow)}
+#consentBanner .consent-text{margin:0; font-size:13px; line-height:1.7}
+#consentBanner .consent-details{margin-top:8px}
+#consentBanner .consent-details summary{cursor:pointer; font-size:12px; color:var(--muted); font-weight:700}
+#consentBanner .consent-policy{white-space:pre-line; margin-top:6px; max-height:180px; overflow:auto}
+#consentBanner .consent-btns{display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap}
+#consentBanner .consent-btns .btn{flex:1 1 0; min-height:44px}
+#consentBanner .consent-x{flex:0 0 auto}
+@media (max-width:767px){
+  #consentBanner{bottom:calc(84px + env(safe-area-inset-bottom))}
+}
+#noticeModal{z-index:130}
+#noticeModal .notice-box{position:relative; max-width:560px}
+#noticeModal .notice-x{position:absolute; top:10px; right:10px}
+#noticeModal .notice-date{margin:0 0 8px}
+#noticeModal .notice-body{white-space:pre-line; line-height:1.85; font-size:13.5px; margin:0}
+#noticeModal .notice-updates{margin-top:14px; border-top:1px dashed var(--line); padding-top:10px}
+#noticeModal .notice-updates-title{margin:0 0 6px; font-weight:900; font-family:"Zen Maru Gothic"; font-size:13.5px}
+#noticeModal .notice-updates ul{margin:0; padding-left:20px; line-height:1.8; font-size:13px}
+#noticeModal .notice-btns{flex-wrap:wrap}
+.ga-settings-row{margin-top:14px}
 </style>
 </head>
 <body>
@@ -288,14 +357,16 @@ body{padding-bottom:64px}
       <span class="count ok" id="posCount"></span>
       <button class="btn small" id="trimBtn"><span data-i18n="trim">上限に合わせて自動調整</span></button>
       <button class="btn small" id="regenBtn">↺ <span data-i18n="regen">再生成</span></button>
+      <button class="btn small" id="outModeBtn" title="タグ形式／文章形式の切り替え（Phase 1 仮UI）">🏷 タグモード</button>
+      <button class="btn small" id="clearBtn2">🗑 <span data-i18n="clear">全解除</span></button>
+      <button class="btn small" id="sheetCloseBtn">✕ <span data-i18n="close">閉じる</span></button>
       <span class="hspace" style="flex:1"></span>
-      <button class="btn small" id="cardBtn">🖼 <span data-i18n="card">画像カード</span></button>
-      <button class="btn small" id="shareBtn">🔗 <span data-i18n="share">共有リンク</span></button>
       <button class="btn primary" id="copyBtn">📋 <span data-i18n="copy">コピー</span></button>
     </div>
     </div>
     <input type="text" id="freeText" data-i18n-ph="freeTextPh" placeholder="追記したい言葉（出力の末尾に付きます）" style="width:100%;box-sizing:border-box;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px">
     <textarea class="out mt8" id="outPos"></textarea>
+    <div id="editHoldBar" class="rowflex mt8 hidden"><span>✏️ <span id="editHoldText">手動編集内容を保持中</span></span><button class="btn small" id="editResetBtn" data-i18n="editReset">自動生成に戻す</button></div>
     <div id="conflictNote" style="display:none"></div>
     <p class="note" data-i18n="editNote">※ 出力欄は直接編集できます。編集した内容はそのままコピーされ、項目を変えても残ります。「再生成」で作り直せます。</p>
     <div class="mt8">
@@ -307,9 +378,6 @@ body{padding-bottom:64px}
       <div class="rowflex"><span class="count ok" id="negCount"></span>
       <button class="btn small" id="copyNegBtn">📋 <span data-i18n="copyNeg">ネガティブをコピー</span></button></div>
       <textarea class="out neg mt8" id="outNeg"></textarea>
-    </div>
-    <div class="rowflex mt12">
-      <a class="btn small" id="xShareBtn" href="https://twitter.com/intent/tweet" target="_blank" rel="noreferrer">𝕏 <span data-i18n="xshare">組み合わせをXで共有</span></a>
     </div>
   </section>
 
@@ -368,13 +436,56 @@ body{padding-bottom:64px}
 
 <div id="mobileBar">
   <span class="count ok" id="mbCount"></span>
-  <button id="mbJump">⬇ <span data-i18n="output">出力プロンプト</span></button>
+  <button id="mbJump">⬆ <span data-i18n="showOutput">出力を表示</span></button>
   <button id="mbCopy" class="primary">📋 <span data-i18n="copy">コピー</span></button>
+</div>
+
+<div id="sheetBackdrop"></div>
+
+<div class="modal" id="clearModal">
+  <div class="box">
+    <h3 data-i18n="clearDlgTitle">すべて解除しますか？</h3>
+    <p class="note" style="font-size:13px; color:var(--text)" data-i18n="clearDlgBody">選択中の項目とプロンプト欄の内容をすべて解除します。お気に入り・プリセット・キャラクターカード・履歴・出力形式・各種設定は保持されます。</p>
+    <div class="dlg-btns">
+      <button class="btn" id="clearCancelBtn" data-i18n="cancel">キャンセル</button>
+      <button class="btn primary" id="clearOkBtn" data-i18n="clearDo">すべて解除</button>
+    </div>
+  </div>
+</div>
+
+<div id="consentBanner" class="hidden" role="dialog" aria-label="アクセス解析についての同意">
+  <p class="consent-text" id="consentText"></p>
+  <details class="consent-details">
+    <summary id="consentMoreSummary">くわしく見る（プライバシーポリシー）</summary>
+    <div class="note consent-policy" id="consentPolicy"></div>
+  </details>
+  <div class="consent-btns">
+    <button class="btn" id="consentDenyBtn">拒否する</button>
+    <button class="btn primary" id="consentAgreeBtn">同意する</button>
+    <button class="iconbtn consent-x" id="consentCloseBtn" aria-label="閉じる">✕</button>
+  </div>
+</div>
+
+<div class="modal" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+  <div class="box notice-box">
+    <button class="iconbtn notice-x" id="noticeCloseBtn" aria-label="閉じる">✕</button>
+    <h3 id="noticeTitle">UPDATE &amp; INFORMATION</h3>
+    <p class="note notice-date" id="noticeDate"></p>
+    <p class="notice-body" id="noticeBody"></p>
+    <div class="notice-updates" id="noticeUpdates"></div>
+    <div class="dlg-btns notice-btns">
+      <button class="btn small" id="noticeSnoozeBtn">3日間表示しない</button>
+      <a class="btn primary hidden" id="noticeXBtn" target="_blank" rel="noopener">Xでフォローして応援する</a>
+      <button class="btn" id="noticeOkBtn">閉じる</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
-<script src="data.js?v=40"></script>
+<script src="data.js?v=41"></script>
+<script src="prose-templates.js?v=1"></script>
+<script src="prose-engine.js?v=1"></script>
 <script>
 "use strict";
 const DATA = window.MAKER_DATA;
@@ -391,35 +502,35 @@ const ENGINES = {
 
 const I18N = {
   ja: { title:"オリキャラプロンプトメーカー", engine:"使うエンジン", people:"人数", solo:"1人", pair:"2人",
-    limit:"文字数上限", searchPh:"🔍 項目を検索（名前・英語）", favOnly:"お気に入りのみ", undo:"戻す", clear:"全解除",
+    limit:"文字数上限", searchPh:"🔍 項目を検索（名前・英語）", favOnly:"お気に入りのみ", undo:"戻す", clear:"全解除", showOutput:"出力を表示", editHold:"手動編集内容を保持中", editReset:"自動生成に戻す", clearDlgTitle:"すべて解除しますか？", clearDlgBody:"選択中の項目とプロンプト欄の内容をすべて解除します。お気に入り・プリセット・キャラクターカード・履歴・出力形式・各種設定は保持されます。", clearDo:"すべて解除", cancel:"キャンセル",
     randomAll:"全ランダム", random3:"3案ランダム", daily:"今日のおまかせ", applyTheme:"テーマ適用",
     negTitle:"ネガティブプロンプト", rephrase:"言い換えてポジティブに追加",
     params:"パラメータ", paramsNote:"※ パラメータは出力の末尾に自動で付きます。--srefを使うときはURLを入れてね。",
-    output:"出力プロンプト", trim:"上限に合わせて自動調整", card:"画像カード", share:"共有リンク", copy:"コピー",
-    copyNeg:"ネガティブをコピー", copyJp:"日本語をコピー", regen:"再生成", freeTextPh:"追記したい言葉（出力の末尾に付きます）", editNote:"※ 出力欄は直接編集できます。編集した内容はそのままコピーされ、項目を変えても残ります。「再生成」で作り直せます。", xshare:"組み合わせをXで共有", presets:"プリセット / キャラカード",
+    output:"出力プロンプト", trim:"上限に合わせて自動調整", copy:"コピー",
+    copyNeg:"ネガティブをコピー", copyJp:"日本語をコピー", regen:"再生成", freeTextPh:"追記したい言葉（出力の末尾に付きます）", editNote:"※ 出力欄は直接編集できます。編集した内容はそのままコピーされ、項目を変えても残ります。「再生成」で作り直せます。", presets:"プリセット / キャラカード",
     presetPh:"プリセット名", savePreset:"現在の組み合わせを保存", saveCard:"表示中のキャラをカード保存",
     export:"書き出し", import:"読み込み", reverse:"逆引き（プロンプトから復元）",
     reverseNote:"既存のプロンプト文を貼ると、一致した項目を自動で選択状態にします。", reverseDo:"復元する",
     history:"履歴", changelog:"更新履歴", help:"使い方・注意", close:"閉じる", candTitle:"ランダム3案",
     footNote:"生成AIでの創作補助ツールです。お使いのモデル・LoRA・環境によって結果は変わります。",
     charScope:"キャラ", sharedScope:"共通", themeNone:"テーマを選ぶ", copied:"コピーしました",
-    linkCopied:"共有リンクをコピーしました", applied:"適用しました", saved:"保存しました",
+    applied:"適用しました", saved:"保存しました",
     nothingSel:"まだ何も選ばれていません", over:"上限オーバー", within:"文字数OK",
     helpBody:"・項目を選ぶだけで、下の「出力プロンプト」に文章が組み上がります。<br>・🔒でカテゴリを固定すると、ランダムやテーマで変わらなくなります。<br>・★はお気に入り。★のみ表示もできます。<br>・配色オプションは、選ぶと下に「もう1色」選ぶ行が出ます。<br>・一部のモデルはネガティブプロンプトが使えません。その場合は「言い換え」でポジティブ表現に変換して追加できます。<br>・niji・journeyではネガティブは --no に変換されて末尾に付きます。<br>・保存したプリセットや履歴は、このブラウザの中だけに保存されます（サーバーには送られません）。<br>・出にくい要素は「強調」が使えます。選択中チップをタップすると⚡が付いて、その要素が強く出力されます（PixAIは重み1.3＋先頭／nijiは先頭に2回／ChatGPTは繰り返し）。もう一度タップで解除。<br>・EN表示では、項目名は日本語のままです（プロンプト自体は英語で出力されます）。<br>・左右の表記（左目・右目、ほくろの左右、ツートンの左右など）は、キャラクター本人から見た左右です。<br>・両立しにくい組み合わせを選ぶと、出力欄の上に⚠でお知らせします（自動では消しません）。<br>・人数は上の「人数」で1人／2人を切り替えます。2人の場合は、A・Bそれぞれに別のデザインを指定できます。<br>・旧バージョンで保存したタトゥーの配置・大きさは引き継がれず「未指定」になります（別の位置や大きさを勝手に付けることはありません）。移行前の保存データは、このブラウザ内に一度だけバックアップが残ります。" },
   en: { title:"Original Character Prompt Maker", engine:"Engine", people:"Characters", solo:"Solo", pair:"Pair",
-    limit:"Char limit", searchPh:"🔍 Search items (name / English)", favOnly:"Favorites only", undo:"Undo", clear:"Clear all",
+    limit:"Char limit", searchPh:"🔍 Search items (name / English)", favOnly:"Favorites only", undo:"Undo", clear:"Clear all", showOutput:"Show output", editHold:"Manual edits are being kept", editReset:"Back to auto-generated", clearDlgTitle:"Clear all selections?", clearDlgBody:"This clears all selected items and everything in the prompt boxes. Favorites, presets, character cards, history, output format and settings will be kept.", clearDo:"Clear all", cancel:"Cancel",
     randomAll:"Random all", random3:"3 random ideas", daily:"Today's pick", applyTheme:"Apply theme",
     negTitle:"Negative prompt", rephrase:"Rephrase into positive & add",
     params:"Parameters", paramsNote:"* Parameters are appended automatically. Enter a URL when using --sref.",
-    output:"Output prompt", trim:"Auto-fit to limit", card:"Image card", share:"Share link", copy:"Copy",
-    copyNeg:"Copy negative", copyJp:"Copy Japanese", regen:"Regenerate", freeTextPh:"Extra words to append to the output", editNote:"* You can edit the output boxes directly. Edits are kept when you copy and when you change items; use Regenerate to rebuild.", xshare:"Share combo on X", presets:"Presets / Character cards",
+    output:"Output prompt", trim:"Auto-fit to limit", copy:"Copy",
+    copyNeg:"Copy negative", copyJp:"Copy Japanese", regen:"Regenerate", freeTextPh:"Extra words to append to the output", editNote:"* You can edit the output boxes directly. Edits are kept when you copy and when you change items; use Regenerate to rebuild.", presets:"Presets / Character cards",
     presetPh:"Preset name", savePreset:"Save current combo", saveCard:"Save current character as card",
     export:"Export", import:"Import", reverse:"Reverse lookup (restore from a prompt)",
     reverseNote:"Paste an existing prompt and matching items will be selected automatically.", reverseDo:"Restore",
     history:"History", changelog:"Changelog", close:"Close", candTitle:"3 random ideas",
     footNote:"A creation-support tool for generative AI. Results vary by model, LoRA and environment.",
     charScope:"Character", sharedScope:"Shared", themeNone:"Choose a theme", copied:"Copied",
-    linkCopied:"Share link copied", applied:"Applied", saved:"Saved",
+    applied:"Applied", saved:"Saved",
     nothingSel:"Nothing selected yet", over:"Over the limit", within:"Within limit",
     helpBody:"・Just pick items and the prompt is built in the Output box below.<br>・Lock a category with 🔒 so random/themes won't change it.<br>・★ marks favorites; you can filter to favorites only.<br>・Color options show an extra row to pick a second color.<br>・Some models cannot use negative prompts. In that case, use Rephrase to convert them into positive wording instead.<br>・For niji・journey, negatives are converted into a --no parameter.<br>・Presets and history are stored only in this browser (never sent to a server).<br>・Hard-to-render elements can be boosted: tap a selected chip to add ⚡ and strengthen it (PixAI: weight 1.3 / niji: twice at the front / ChatGPT: repeated). Tap again to remove.<br>・In EN mode, item names stay in Japanese (prompts themselves are output in English).<br>・Left and right in this maker (left eye / right eye, mole sides, two-tone sides) are always from the point of view of the character.<br>・Combinations that clash are flagged with a warning above the output (nothing is removed automatically).<br>・Use the People selector for 1 or 2 people. With 2 people, characters A and B can each have a separate design.<br>・Tattoo placement/size saved in older versions is not carried over and becomes 'unspecified' (a different placement or size is never assigned automatically). A one-time backup of the pre-migration saved data is kept in this browser." }
 };
@@ -433,7 +544,7 @@ const T = k => (I18N[lang] && I18N[lang][k]) || I18N.ja[k] || k;
 function emptyChar(){ return { sel:{}, co:{} }; }
 function emptyState(){ return { engine:"pixai", mode:"solo", count:1, active:"A",
   chars:{ A:emptyChar(), B:emptyChar() }, shared:{ sel:{}, co:{} },
-  neg:{}, locks:{}, favs:[], extra:[], boost:[], order:null, limit:null, freeText:"", outEdited:null, negEdited:null, jpEdited:null }; }
+  neg:{}, locks:{}, favs:[], extra:[], boost:[], order:null, limit:null, freeText:"", outEdited:null, negEdited:null, jpEdited:null, outMode:"tag", proseEdited:null, proseJpEdited:null }; }
 let S = emptyState();
 let undoStack = [];
 let favOnly = false, searchQuery = "";
@@ -631,7 +742,11 @@ function loadLS(){
     if(raw){ if(!store.get(LS_BACKUP_KEY)){ try{ store.set(LS_BACKUP_KEY, raw); }catch(e){} }
       const d = JSON.parse(raw);
       presets = d.presets||[]; cards = d.cards||[]; history = d.history||[];
-      if(d.S){ if(d.S.engine && ENGINES[d.S.engine]) S.engine = d.S.engine; if(d.S.limit) S.limit = d.S.limit; } }
+      if(d.S){ if(d.S.engine && ENGINES[d.S.engine]) S.engine = d.S.engine; if(d.S.limit) S.limit = d.S.limit;
+        if(Array.isArray(d.S.favs)){ const validFav = new Set(); CATS.concat(NEGCATS).forEach(c=>c.options.forEach(o=>validFav.add(o._key))); S.favs = [...new Set(d.S.favs.filter(k=>typeof k==="string" && validFav.has(k)))]; } } }
+    /* URLハッシュからの状態適用は互換性のため残す（既に共有されたリンクと
+       旧形式の状態データの適用・サニタイズ経路）。ハッシュを生成するUIは
+       共有リンク機能の削除に伴い廃止済み。 */
     const h = location.hash.slice(1);
     if(h){ const d = JSON.parse(decodeURIComponent(escape(atob(h))));
       if(d && d.chars) { S = Object.assign(emptyState(), d); sanitizeState(); toast(T("applied")); } }
@@ -839,7 +954,7 @@ function buildSection(cat){
       b.classList.toggle("faved", S.favs.includes(b.dataset.fav));
     }
   }));
-  sec.querySelector('[data-act="dice"]').addEventListener("click", ()=>{ pushUndo(); randomizeCat(cat); afterChange(); });
+  sec.querySelector('[data-act="dice"]').addEventListener("click", ()=>{ pushUndo(); randomizeCat(cat); afterChange(); gaTrack("random_generate", { scope: "category" }); });
   sec.querySelector('[data-act="lock"]').addEventListener("click", ev=>{ S.locks[cat.id]=!S.locks[cat.id]; ev.target.classList.toggle("on", !!S.locks[cat.id]); saveLS(); });
   sec.querySelector('[data-act="clearcat"]').addEventListener("click", ()=>{ pushUndo(); clearCat(cat); afterChange(); });
   sec.querySelector('[data-act="fold"]').addEventListener("click", ()=>{
@@ -1008,7 +1123,12 @@ function renderSummary(){
     else addFor(cat,"A");
   });
   S.extra.forEach((f,i)=>chips.push(`<span class="schip">+: ${esc(f)}<button data-unextra="${i}">×</button></span>`));
-  bar.innerHTML = chips.length ? chips.join("") : `<span class="none">${T("nothingSel")}</span>`;
+  const abSeg = S.mode==="pair" ? `<span class="abseg"><span class="ablabel">${lang==="en" ? "Editing" : "編集中"}</span><button data-sumab="A" class="${S.active==="A"?"on":""}">A</button><button data-sumab="B" class="${S.active==="B"?"on":""}">B</button></span>` : "";
+  bar.innerHTML = abSeg + (chips.length ? chips.join("") : `<span class="none">${T("nothingSel")}</span>`);
+  bar.querySelectorAll("[data-sumab]").forEach(b=>b.addEventListener("click", ()=>{
+    const target = document.querySelector(`#charSeg button[data-char="${b.dataset.sumab}"]`);
+    if(target){ const y = window.scrollY; target.click(); try{ window.scrollTo(0, y); }catch(e){} }
+  }));
   bar.querySelectorAll("[data-unpick]").forEach(b=>b.addEventListener("click", ()=>{
     const [cid, idx, who] = b.dataset.unpick.split(":");
     togglePick(catById[cid], parseInt(idx,10), who, true); afterChange();
@@ -1025,7 +1145,6 @@ function renderSummary(){
   bar.querySelectorAll("[data-unextra]").forEach(b=>b.addEventListener("click", ()=>{
     pushUndo(); S.extra.splice(parseInt(b.dataset.unextra,10),1); afterChange();
   }));
-  updateXShare();
 }
 function togglePick(cat, idx, who, forceOff){
   pushUndo();
@@ -1393,6 +1512,93 @@ function buildJapanese(){
   if(S.freeText) out = out ? out + "\n" + S.freeText : S.freeText;
   return out;
 }
+/* ---------- prose mode (Phase 1): 中間表現アダプタ ----------
+ * 現在の選択状態から、文章化エンジン（prose-engine.js）用の構造化データを返す。
+ * 既存の合成処理をそのまま再利用する:
+ *  - optFrag / jpLabel … tattoo の部位・サイズ、colorOption の {C}/{SIDE} 差し込み、
+ *    hairColor/eyeColor の co 合成、背景3カテゴリの連携（gradient 抑制・scene 色調文）
+ *  - stripEyeReflection / stripEyeReflectionJp … 文章化する前の「節」段階で適用する
+ *    （文章になってから適用すると文が壊れるため、収集時点=節段階で既存の正規表現を使う）
+ *  - genderCountFrag / genderCountJp / centeringApplies … 人数固定文と合算文
+ * 既存関数は変更しない。gender は文章化せず、主語・代名詞の決定にのみ使う。 */
+const PROSE_BLOCKS_EN = [["gender","age","bodyType","skinColor"],["hairLength","hairTexture","hair","bangs","forehead","sidelocks","hairPlus","hairColor","colorOption"],["eyeShape","eyeColor","pupilShape","irisMotif","eyeTexture","eyebrows","faceDetail","tattoo","mouth","expression","eyeExpression"],["outfit"],["features"],["poseSolo","posePair","gazeSolo","gazePair"],["framing","angle","shootStyle"],["bgColor","background","bgPattern","effects"]];
+function proseGenderOf(who){
+  const c = catById["gender"]; if(!c) return "unknown";
+  const v = getSel(c, who);
+  if(v===null || v===undefined || !c.options[v]) return "unknown";
+  const f = c.options[v].frag;
+  if(f==="1girl") return "female";
+  if(f==="1boy") return "male";
+  if(f) return "neutral";
+  return "unknown";
+}
+function collectProseItems(cat, who){
+  const v = getSel(cat, who);
+  if(v===null || v===undefined) return [];
+  const idxs = cat.type==="multi" ? v : [v];
+  const items = [];
+  idxs.forEach(i=>{
+    const o = cat.options[i]; if(!o) return;
+    const raw = optFrag(cat, o, who);
+    if(!raw) return; /* 合成結果が空 = 抑制対象（bgColor の gradient 抑制など）。collectJp の skip 条件と一致 */
+    if(cat.id==="irisMotif" && o.label==="キラキラ" && eyeTextureLabel(who)==="ハイライトなし") return; /* collectJp の除外連動を再利用 */
+    let f = raw;
+    if(cat.id!=="eyeTexture") f = stripEyeReflection(f, who); /* 節段階で strip（文章化後には適用しない） */
+    let j = jpLabel(cat, o, who);
+    if(cat.id!=="eyeTexture") j = stripEyeReflectionJp(j, who);
+    if(!f && !j) return;
+    items.push({
+      idx: i, label: o.label, frag: f || "", jp: j || "",
+      clauses: f ? f.split(", ").filter(Boolean) : [],
+      boosted: isBoosted(cat.id, i, who),
+      flags: { scene: !!o.scene, fixedColor: o.fixedColor || null, colorTemplate: !!o.colorTemplate,
+               word: o.word || null, sideColor: !!o.sideColor, oddColors: !!o.oddColors,
+               gradColors: !!o.gradColors, multiColors: !!o.multiColors }
+    });
+  });
+  return items;
+}
+function buildProseContext(){
+  if(!hasAnySelection()) return { empty: true, mode: S.mode, pair: S.mode==="pair" };
+  const pair = S.mode==="pair";
+  const blocksFor = (who, scopeWanted)=>{
+    const out = [];
+    PROSE_BLOCKS_EN.forEach((ids, bi)=>{
+      const cats = [];
+      ids.forEach(id=>{
+        const cat = catById[id]; if(!cat) return;
+        if(id==="gender" && pair) return; /* pair 時は genderCount に一本化（タグ側 buildPositive/buildJapanese と同仕様） */
+        const isShared = cat.scope==="shared";
+        if(scopeWanted==="char" && isShared) return;
+        if(scopeWanted==="scene" && !isShared) return;
+        const items = collectProseItems(cat, who);
+        if(items.length) cats.push({ catId: id, items });
+      });
+      if(cats.length) out.push({ block: bi, cats });
+    });
+    return out;
+  };
+  const qcat = catById["quality"];
+  const centered = centeringApplies();
+  return {
+    empty: false, mode: S.mode, pair: pair, centering: centered,
+    headEn: pair ? "pair portrait, exactly two characters in the frame"
+                 : "solo, exactly one character, single-character portrait" + (centered ? ", centered solo character" : ""),
+    countEn: pair ? genderCountFrag() : [],
+    headJp: pair ? "キャラクター2人。画面内には2人のキャラクターだけを配置する。"
+                 : "キャラクター1人のみ。画面内には1人のキャラクターだけを配置する。" + (centered ? "人物を画面の中央に配置する。" : ""),
+    countJp: pair ? genderCountJp() : [],
+    genders: { A: proseGenderOf("A"), B: pair ? proseGenderOf("B") : null },
+    charA: blocksFor("A", "char"),
+    charB: pair ? blocksFor("B", "char") : [],
+    scene: blocksFor("A", "scene"),
+    quality: qcat ? collectProseItems(qcat, "A") : [],
+    extra: (S.extra || []).slice(),
+    freeText: S.freeText || ""
+  };
+}
+window.buildProseContext = buildProseContext;
+window.setOutMode = function(m){ const prevOutMode = S.outMode; S.outMode = (m==="prose" ? "prose" : "tag"); if(S.outMode !== prevOutMode) gaTrack("out_mode_switch", { to: S.outMode }); renderOutput(); saveLS(); };
 function collectNegatives(){
   const out = [];
   NEGCATS.forEach(cat=>{
@@ -1437,10 +1643,20 @@ function updateCounts(){
   const negEl = document.getElementById("outNeg");
   if(negEl) document.getElementById("negCount").textContent = negEl.value.length + (lang==="en"?" chars":" 文字");
 }
+/* GA4イベント送信ヘルパー: extras.js が無い/ID未設定/未同意なら何もしない。
+ * 送るのはイベント名と集計用属性のみ（プロンプト本文は送らない） */
+function gaTrack(n, p){ try{ if(window.MakerAnalytics) MakerAnalytics.track(n, p); }catch(e){} }
+let gaPrevGenEmpty = true;
 function renderOutput(){
-  const gen = buildPositive(), neg = buildNegative(), jp = buildJapanese();
-  document.getElementById("outPos").value = (S.outEdited!==null && S.outEdited!==undefined) ? S.outEdited : gen;
-  document.getElementById("outJP").value = (S.jpEdited!==null && S.jpEdited!==undefined) ? S.jpEdited : jp;
+  const proseOn = S.outMode==="prose" && !!window.MakerProse && !!window.MAKER_PROSE_TPL;
+  const pctx = proseOn ? buildProseContext() : null;
+  const gen = proseOn ? MakerProse.buildEn(pctx) : buildPositive(), neg = buildNegative(), jp = proseOn ? MakerProse.buildJp(pctx) : buildJapanese();
+  const genEmptyNow = !gen;
+  if(gaPrevGenEmpty && !genEmptyNow) gaTrack("prompt_generate", { out_mode: proseOn ? "prose" : "tag" });
+  gaPrevGenEmpty = genEmptyNow;
+  document.getElementById("outPos").value = proseOn ? ((S.proseEdited!==null && S.proseEdited!==undefined) ? S.proseEdited : gen) : ((S.outEdited!==null && S.outEdited!==undefined) ? S.outEdited : gen);
+  document.getElementById("outJP").value = proseOn ? ((S.proseJpEdited!==null && S.proseJpEdited!==undefined) ? S.proseJpEdited : jp) : ((S.jpEdited!==null && S.jpEdited!==undefined) ? S.jpEdited : jp);
+  const omb = document.getElementById("outModeBtn"); if(omb) omb.textContent = proseOn ? "🖊 文章モード（仮）" : "🏷 タグモード";
   const eng = ENGINES[S.engine];
   const wrap = document.getElementById("negOutWrap");
   if(eng.neg==="separate" || eng.neg==="prose"){
@@ -1451,6 +1667,15 @@ function renderOutput(){
   updateCounts();
   const cn = document.getElementById("conflictNote");
   if(cn){ const cf = findConflicts(); cn.style.display = cf.length ? "" : "none"; cn.innerHTML = cf.map(m=>"⚠ " + m).join("<br>"); }
+  const hb = document.getElementById("editHoldBar");
+  if(hb){
+    const held = [];
+    if(proseOn ? (S.proseEdited!==null && S.proseEdited!==undefined) : (S.outEdited!==null && S.outEdited!==undefined)) held.push("EN");
+    if(proseOn ? (S.proseJpEdited!==null && S.proseJpEdited!==undefined) : (S.jpEdited!==null && S.jpEdited!==undefined)) held.push("JP");
+    if((S.negEdited!==null && S.negEdited!==undefined) && !wrap.classList.contains("hidden")) held.push(lang==="en" ? "Negative" : "ネガティブ");
+    hb.classList.toggle("hidden", !held.length);
+    if(held.length) document.getElementById("editHoldText").textContent = T("editHold") + "（" + held.join("・") + "）";
+  }
 }
 function findConflicts(){
   const msgs = [];
@@ -1691,6 +1916,7 @@ function randomizeAll(){
   pushUndo();
   visibleCats().forEach(cat=>randomizeCat(cat));
   afterChange();
+  gaTrack("random_generate", { scope: "all" });
 }
 function snapshotRandom(){
   const keep = JSON.stringify(S);
@@ -1747,14 +1973,14 @@ function renderPresets(){
   const pl = document.getElementById("presetList");
   pl.innerHTML = presets.map((p,i)=>`<div class="listitem"><span>📌 ${esc(p.name)}</span><span>
     <button class="iconbtn" data-preset="${i}">適用</button> <button class="iconbtn" data-presetdel="${i}">削除</button></span></div>`).join("");
-  pl.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(presets[+b.dataset.preset].state))); sanitizeState(); syncControls(); afterChange(); toast(T("applied")); }));
+  pl.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); S = Object.assign(emptyState(), JSON.parse(JSON.stringify(presets[+b.dataset.preset].state))); sanitizeState(); syncControls(); afterChange(); gaTrack("preset_apply", { kind: "preset" }); toast(T("applied")); }));
   pl.querySelectorAll("[data-presetdel]").forEach(b=>b.addEventListener("click", ()=>{ presets.splice(+b.dataset.presetdel,1); saveLS(); renderPresets(); }));
   const cl = document.getElementById("cardList");
   cl.innerHTML = cards.map((c,i)=>`<div class="listitem"><span>🪪 ${esc(c.name)} <span class="meta">→ ${esc(c.who)}</span></span><span>
     <button class="iconbtn" data-cardto="A:${i}">Aへ</button> <button class="iconbtn" data-cardto="B:${i}">Bへ</button> <button class="iconbtn" data-carddel="${i}">削除</button></span></div>`).join("");
   cl.querySelectorAll("[data-cardto]").forEach(b=>b.addEventListener("click", ()=>{
     const [who, i] = b.dataset.cardto.split(":");
-    pushUndo(); S.chars[who] = JSON.parse(JSON.stringify(cards[+i].data)); S.active = who; sanitizeState(); syncControls(); afterChange(); toast(T("applied"));
+    pushUndo(); S.chars[who] = JSON.parse(JSON.stringify(cards[+i].data)); S.active = who; sanitizeState(); syncControls(); afterChange(); gaTrack("preset_apply", { kind: "card" }); toast(T("applied"));
   }));
   cl.querySelectorAll("[data-carddel]").forEach(b=>b.addEventListener("click", ()=>{ cards.splice(+b.dataset.carddel,1); saveLS(); renderPresets(); }));
 }
@@ -1771,11 +1997,6 @@ function pushHistory(){
   if(history.length && history[0].text===text) return;
   history.unshift({ time:new Date().toLocaleString(), text, state: JSON.parse(JSON.stringify(S)) });
   history = history.slice(0,20); saveLS(); renderHistory();
-}
-function shareLink(){
-  const s = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
-  const url = location.href.split("#")[0] + "#" + s;
-  copyText(url, null, T("linkCopied"));
 }
 function reverseParse(){
   const text = document.getElementById("reverseInput").value.toLowerCase();
@@ -1802,35 +2023,6 @@ function reverseParse(){
   document.getElementById("reverseResult").textContent = matched + (lang==="en"?" items matched":" 件マッチしました");
   afterChange();
 }
-function makeCard(){
-  const cv = document.createElement("canvas"); cv.width = 1200; cv.height = 630;
-  const x = cv.getContext("2d");
-  const grad = x.createLinearGradient(0,0,1200,630);
-  grad.addColorStop(0,"#241a3f"); grad.addColorStop(1,"#3b1150");
-  x.fillStyle = grad; x.fillRect(0,0,1200,630);
-  x.strokeStyle = "#c084fc"; x.lineWidth = 6; x.strokeRect(18,18,1164,594);
-  x.fillStyle = "#f472b6"; x.font = "900 44px 'Zen Maru Gothic',sans-serif";
-  x.fillText(lang==="en"?"My Prompt Combo":"わたしの組み合わせ", 56, 96);
-  x.fillStyle = "#f2edff"; x.font = "700 30px 'M PLUS Rounded 1c',sans-serif";
-  const labels = [];
-  visibleCats().forEach(cat=>{
-    const v = getSel(cat,"A"); if(v===null||v===undefined) return;
-    (cat.type==="multi"?v:[v]).forEach(i=>{ if(cat.options[i]) labels.push(catTitle(cat)+": "+cat.options[i].label); });
-  });
-  let ly = 160;
-  labels.slice(0,9).forEach(l=>{ x.fillText("・"+l, 56, ly); ly += 44; });
-  x.fillStyle = "#b3a8d9"; x.font = "500 20px 'M PLUS Rounded 1c',sans-serif";
-  const pos = buildPositive();
-  const lines = []; let cur = "";
-  pos.split(" ").forEach(w=>{ if((cur+" "+w).length>92){ lines.push(cur); cur = w; } else cur = cur?cur+" "+w:w; });
-  if(cur) lines.push(cur);
-  let py = Math.max(ly+16, 470);
-  lines.slice(0,3).forEach(l=>{ x.fillText(l, 56, py); py += 28; });
-  x.fillStyle = "#c084fc"; x.font = "800 24px 'M PLUS Rounded 1c',sans-serif";
-  x.fillText("by 蜂生える @o8ee_l ・ オリキャラプロンプトメーカー", 56, 592);
-  const a = document.createElement("a");
-  a.download = "prompt-card.png"; a.href = cv.toDataURL("image/png"); a.click();
-}
 
 /* ---------- wiring & init ---------- */
 const $ = id => document.getElementById(id);
@@ -1853,7 +2045,7 @@ function renderChangelog(){
     `<div class="listitem"><span><b>${esc(c.date)}</b> ・ ${esc(c.text)}</span></div>`).join("");
 }
 $("engineSel").addEventListener("change", e=>{ S.engine = e.target.value; S.limit = null; S.outEdited = null; S.negEdited = null; S.jpEdited = null; syncControls(); renderNeg(); renderOutput(); saveLS(); });
-document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); const n = parseInt(b.dataset.count,10)||1; S.count = n; S.mode = n===2 ? "pair" : "solo"; syncControls(); afterChange(); }));
+document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click", ()=>{ pushUndo(); const n = parseInt(b.dataset.count,10)||1; const prevMode = S.mode; S.count = n; S.mode = n===2 ? "pair" : "solo"; if(S.mode !== prevMode) gaTrack("mode_switch", { mode: S.mode }); syncControls(); afterChange(); }));
 document.querySelectorAll("#charSeg button").forEach(b=>b.addEventListener("click", ()=>{ S.active = b.dataset.char; syncControls(); renderCats(); renderSummary(); renderOutput(); saveLS(); }));
 $("limitInput").addEventListener("change", e=>{ S.limit = parseInt(e.target.value,10)||null; renderOutput(); saveLS(); });
 $("searchInput").addEventListener("input", e=>{ searchQuery = e.target.value.trim(); renderCats(); });
@@ -1865,12 +2057,42 @@ $("undoBtn").addEventListener("click", ()=>{
 document.addEventListener("keydown", e=>{
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); $("undoBtn").click(); }
 });
-$("clearBtn").addEventListener("click", ()=>{
+/* 全解除（2026-11-28 仕様変更：全部消す版）: プロンプト作成内容をすべてリセットする。
+ * 対象: A/B・共通の選択（sel/co/tat）、ネガティブ選択、選択に紐づく boost、
+ *       extra（追加文章）、freeText（自由入力）、手動編集（outEdited / jpEdited /
+ *       negEdited / proseEdited / proseJpEdited）。結果として表示中の
+ *       英語・日本語・ネガティブ出力は即座にすべて空になる。
+ * 保持: favs / プリセット・カード・履歴 / mode・count・active / outMode /
+ *       engine / limit / locks / order。
+ * 実行前に pushUndo() で復旧可能にし、確認ダイアログを挟む（Undo で解除前の
+ * 状態に完全復元できる）。再描画は afterChange() を通さず直接行う
+ * （syncEditedPair 等の副作用を避けるため）。ツールバーと出力パネルの
+ * ボタンはこの処理に一本化。 */
+function clearAllSelections(){
   pushUndo();
-  const keep = { engine: S.engine, limit: S.limit };
-  S = Object.assign(emptyState(), keep);
-  afterChange();
-});
+  ["A","B"].forEach(w=>{ const st = S.chars[w]; if(st){ st.sel = {}; st.co = {}; st.tat = {}; } });
+  if(S.shared){ S.shared.sel = {}; S.shared.co = {}; S.shared.tat = {}; }
+  S.neg = {};
+  S.boost = [];
+  S.extra = [];
+  S.freeText = "";
+  S.outEdited = null; S.jpEdited = null; S.negEdited = null;
+  S.proseEdited = null; S.proseJpEdited = null;
+  normalizeSoloActive();
+  const y = window.scrollY;
+  const ft = $("freeText"); if(ft) ft.value = "";
+  renderCats(); renderNeg(); renderSummary(); renderOutput(); saveLS();
+  if(!restoreAnchor()){ try{ window.scrollTo(0, y); }catch(e){} }
+  gaTrack("clear_all");
+  toast(lang==="en" ? "All selections cleared" : "選択をすべて解除しました");
+}
+function openClearModal(){ $("clearModal").classList.add("open"); }
+function closeClearModal(){ $("clearModal").classList.remove("open"); }
+$("clearBtn").addEventListener("click", openClearModal);
+$("clearBtn2").addEventListener("click", openClearModal);
+$("clearCancelBtn").addEventListener("click", closeClearModal);
+$("clearOkBtn").addEventListener("click", ()=>{ closeClearModal(); clearAllSelections(); });
+$("clearModal").addEventListener("click", e=>{ if(e.target===$("clearModal")) closeClearModal(); });
 $("randomAllBtn").addEventListener("click", randomizeAll);
 async function copyText(text, _el, okMsg){
   let ok = false;
@@ -1892,38 +2114,31 @@ async function copyText(text, _el, okMsg){
   return ok;
 }
 $("copyBtn").addEventListener("click", ()=>{
-  copyText($("outPos").value, $("outPos")).then(ok=>{ if(ok) pushHistory(); });
+  copyText($("outPos").value, $("outPos")).then(ok=>{ if(ok){ pushHistory(); gaTrack("prompt_copy", { target: "en" }); } });
 });
 $("mbCopy").addEventListener("click", ()=>$("copyBtn").click());
 
-$("mbJump").addEventListener("click", ()=>{ $("outPanel").scrollIntoView({ behavior:"smooth", block:"start" }); });
+/* ボトムシート（Stage C）: スマホでは出力パネルをシートとして開く。
+ * シートの開閉は body.sheet-open クラスのみで管理し、A/B切替や再描画とは独立。 */
+function openSheet(){ document.body.classList.add("sheet-open"); }
+function closeSheet(){ document.body.classList.remove("sheet-open"); }
+$("mbJump").addEventListener("click", openSheet);
+$("sheetCloseBtn").addEventListener("click", closeSheet);
+$("sheetBackdrop").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeSheet(); closeClearModal(); } });
+window.addEventListener("resize", ()=>{ if(window.innerWidth>=768) closeSheet(); });
 $("copyNegBtn").addEventListener("click", ()=>{
-  copyText($("outNeg").value, $("outNeg"));
+  copyText($("outNeg").value, $("outNeg")).then(ok=>{ if(ok) gaTrack("prompt_copy", { target: "neg" }); });
 });
-$("copyJpBtn").addEventListener("click", ()=>{ copyText($("outJP").value, $("outJP")); });
-$("regenBtn").addEventListener("click", ()=>{ S.outEdited = null; S.negEdited = null; S.jpEdited = null; renderOutput(); saveLS(); });
+$("copyJpBtn").addEventListener("click", ()=>{ copyText($("outJP").value, $("outJP")).then(ok=>{ if(ok) gaTrack("prompt_copy", { target: "jp" }); }); });
+$("regenBtn").addEventListener("click", ()=>{ S.outEdited = null; S.negEdited = null; S.jpEdited = null; S.proseEdited = null; S.proseJpEdited = null; renderOutput(); saveLS(); });
+$("editResetBtn").addEventListener("click", ()=>$("regenBtn").click());
+$("outModeBtn").addEventListener("click", ()=>{ const prevOutMode = S.outMode; S.outMode = S.outMode==="prose" ? "tag" : "prose"; if(S.outMode !== prevOutMode) gaTrack("out_mode_switch", { to: S.outMode }); renderOutput(); saveLS(); });
 $("freeText").addEventListener("input", e=>{ S.freeText = e.target.value; renderOutput(); saveLS(); });
-$("outPos").addEventListener("input", e=>{ S.outEdited = e.target.value; updateCounts(); saveLS(); });
-$("outJP").addEventListener("input", e=>{ S.jpEdited = e.target.value; updateCounts(); saveLS(); });
+$("outPos").addEventListener("input", e=>{ if(S.outMode==="prose") S.proseEdited = e.target.value; else S.outEdited = e.target.value; updateCounts(); saveLS(); });
+$("outJP").addEventListener("input", e=>{ if(S.outMode==="prose") S.proseJpEdited = e.target.value; else S.jpEdited = e.target.value; updateCounts(); saveLS(); });
 $("outNeg").addEventListener("input", e=>{ S.negEdited = e.target.value; updateCounts(); saveLS(); });
 $("trimBtn").addEventListener("click", trimToLimit);
-$("shareBtn").addEventListener("click", shareLink);
-$("cardBtn").addEventListener("click", makeCard);
-function updateXShare(){
-  const a = document.getElementById("xShareBtn"); if(!a) return;
-  const labels = [];
-  const collect = (who, skipShared)=>{
-    visibleCats().forEach(cat=>{
-      if(skipShared && cat.scope==="shared") return;
-      const v = getSel(cat, who); if(v===null||v===undefined) return;
-      (cat.type==="multi"?v:[v]).forEach(i=>{ if(cat.options[i] && cat.options[i].frag) labels.push(cat.options[i].label); });
-    });
-  };
-  collect("A", false);
-  if(S.mode==="pair") collect("B", true);
-  const text = "オリキャラプロンプトメーカーで組み合わせ作ったよ💜\n" + (labels.length ? labels.join(" / ") + "\n" : "") + "https://o8ee-l.github.io/prompt-maker/";
-  a.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
-}
 $("rephraseBtn").addEventListener("click", ()=>{
   const neg = collectNegatives(); let added = 0;
   neg.forEach(n=>{ const r = DATA.rephrase[n]; if(r && !S.extra.includes(r)){ S.extra.push(r); added++; } });
@@ -1972,18 +2187,14 @@ $("themeBtn").addEventListener("click", ()=>{
   applyI18n(); syncControls();
   renderCats(); renderNeg(); renderSummary(); renderOutput();
   renderPresets(); renderHistory(); renderChangelog();
-  if(window.GA_MEASUREMENT_ID){
-    const s = document.createElement("script");
-    s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + window.GA_MEASUREMENT_ID;
-    document.head.appendChild(s);
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function(){ dataLayer.push(arguments); };
-    gtag("js", new Date()); gtag("config", window.GA_MEASUREMENT_ID);
-  }
+  /* GA4の読み込みは extras.js が担当する（同意がある場合のみ読み込む。
+     ID未設定・未同意・拒否の場合は一切読み込まない） */
   if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
     navigator.serviceWorker.register("sw.js").catch(()=>{});
   }
 })();
 </script>
+<script src="notice-config.js?v=1"></script>
+<script src="extras.js?v=1"></script>
 </body>
 </html>
