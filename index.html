@@ -114,6 +114,11 @@
   .about-body + .about-body { margin-top:12px; }
   .about-lead .ll { display:block; }
   .about-body .al { display:block; }
+  /* 創作について（WHY I CREATE）：概要の後・KEEP OUTの前に置く独立した文章エリア */
+  .why-sec { margin-bottom:16px; }
+  .why-sec p { font-size:13px; line-height:1.87; letter-spacing:.03em; color:var(--ink); max-width:700px; }
+  .why-sec p + p { margin-top:0; }
+  .why-sec h2 { padding-top:6px; padding-bottom:6px; margin-bottom:10px; }
   .ko-track { display:flex; width:max-content; animation:koScroll 30s linear infinite; }
   .ko-track span {
     white-space:nowrap; font-size:10px; font-weight:700; letter-spacing:.3em;
@@ -556,6 +561,12 @@
       width:100%; max-width:1000px;
       margin:auto auto 12px;
     }
+    #panel-profile section.why-sec {
+      display:block; flex:none;
+      width:100%; max-width:1000px;
+      margin:-4px auto 8px;
+    }
+    #panel-profile section.why-sec p { line-height:1.49; }
     #panel-profile .prof-center > section { margin-top:auto; margin-bottom:auto; }
   }
   /* ===== PC・低丈（850〜899px）: プロフを余白・タイポで圧縮 ===== */
@@ -600,6 +611,7 @@
     ul.terms li, ul.hearts li { padding-left:16px; text-indent:-16px; }
     /* プロフ：概要→マーキー→プロフィールの間隔を均等に */
     #panel-profile .about-sec { margin-bottom:20px; }
+    #panel-profile .why-sec { margin-top:-7px; margin-bottom:13px; }
     #panel-profile .ko-marquee { margin-bottom:20px; }
     /* メニュー：サブスク（画像1枚）のスワイプは中央寄せ */
     #panel-menu .swipe:has(> img:only-child) { justify-content:center; }
@@ -680,6 +692,18 @@
       <p class="about-lead"><span class="dropcap">蜂</span><span class="lead-text"><span class="ll">生えるの個人サイトです。</span><span class="ll">ご利用・ご依頼の際は、こちらをご確認ください。</span></span></p>
       <p class="about-body"><span class="al">AIを使った創作物の制作を中心に、イラスト・音楽・動画で私独自の世界観を表現しています。</span><span class="al">「病み×かわいい×鬱くしい」をテーマに、フリーアイコンやプロンプトの配布も行っています。</span></p>
       <p class="about-body"><span class="al">プロンプトメーカーなどのツール制作も含め、さまざまな分野にチャレンジしています。</span><span class="al">作ったものが、誰かの創作のきっかけや誰かの記憶に残れば嬉しいです。</span></p>
+    </section>
+
+    <section class="why-sec">
+      <h2>創作について<span class="en">WHY I CREATE</span></h2>
+      <p>私は、自分が生きた証を残したいと思っています。</p>
+      <p>いつか私がこの世界からいなくなっても、私の作った作品が誰かの手に渡り、誰かの心に残り、まだ見ぬ時代の誰かに発見されてほしい。</p>
+      <p>時代を超えて、作品と一緒に自分の名前も残っていてほしい。</p>
+      <p>技術はない。でも、アイデアはある。</p>
+      <p>だからこそ、AIの力を借りてでも、自分の思い描いた世界を形にしていきたい。</p>
+      <p>AIを使うことも、私にとっては創作の手段のひとつです。</p>
+      <p>いつか終わりが来るからこそ、今を形に残したい。</p>
+      <p>それが、私が創作を続ける理由のひとつです。</p>
     </section>
 
     <div class="ko-marquee" aria-hidden="true"><div class="ko-track"><span>KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ </span><span>KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ KEEP OUT ✦ </span></div></div>
@@ -1011,7 +1035,7 @@
   <!-- ギャラリー -->
   <div class="panel" id="panel-gallery">
     <section>
-      <img class="crt-tv" src="img/crt-tv.png" alt="">
+      <img class="crt-tv" src="img/crt-tv.png?v=20261128" alt="">
       <h2>ツール・診断<span class="en">TOOLS</span></h2>
       <div class="links">
         <a href="https://o8ee-l.github.io/prompt-maker/" target="_blank" rel="noopener">オリキャラプロンプトメーカー</a>
